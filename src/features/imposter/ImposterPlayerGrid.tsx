@@ -83,29 +83,11 @@ export function ImposterPlayerGrid({
               <Card
                 key={player.id}
                 variant={isViewed ? 'dimmed' : 'interactive'}
-                onClick={() => handlePlayerClick(player.id)}
+                onClick={isViewed ? undefined : () => handlePlayerClick(player.id)}
                 className="text-center"
               >
                 <div className="space-y-2">
-                  {isViewed && (
-                    <div className="flex justify-center">
-                      <svg
-                        className="w-6 h-6 text-green-400"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  )}
                   <h3 className="text-xl font-bold text-white">Player {player.id}</h3>
-                  {isViewed && (
-                    <p className="text-sm text-gray-500">Viewed</p>
-                  )}
                 </div>
               </Card>
             );
