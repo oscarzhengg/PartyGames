@@ -3,51 +3,42 @@
 @tailwind utilities;
 
 @layer base {
-  * {
+  html {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-  }
-
-  html {
-    /* Prevent text size adjustment on iOS */
-    -webkit-text-size-adjust: 100%;
-    /* Use full viewport height, accounting for mobile browser UI */
+    width: 100%;
     height: 100%;
     height: -webkit-fill-available;
-    /* Set background to match app */
-    background: linear-gradient(180deg, #0a0e27 0%, #000000 100%);
-    background-attachment: fixed;
+    background: #000000;
+    background-color: #000000;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
-    @apply text-white;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
-    background: linear-gradient(180deg, #0a0e27 0%, #000000 100%);
-    background-attachment: fixed;
-    /* Prevent text size adjustment on iOS */
-    -webkit-text-size-adjust: 100%;
-    /* Prevent tap highlight */
-    -webkit-tap-highlight-color: transparent;
-    /* Use full viewport height, accounting for mobile browser UI */
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-    /* Prevent horizontal scroll */
-    overflow-x: hidden;
-    /* Remove default margins */
     margin: 0;
     padding: 0;
-    /* Support for iPhone safe areas */
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+    width: 100%;
+    height: 100%;
+    height: -webkit-fill-available;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: linear-gradient(180deg, #0a0e27 0%, #000000 100%);
+    background-color: #000000;
+    color: white;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
   }
 
   #root {
+    margin: 0;
+    padding: 0;
     width: 100%;
+    height: 100%;
     min-height: 100vh;
     min-height: -webkit-fill-available;
-    /* Support for iPhone safe areas */
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
+    background: linear-gradient(180deg, #0a0e27 0%, #000000 100%);
+    background-color: #000000;
   }
 }
