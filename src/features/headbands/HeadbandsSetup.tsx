@@ -14,11 +14,7 @@ const CategoryIcons: Record<Category, React.ReactNode> = {
   ),
   'Animals': (
     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <circle cx="9.5" cy="9.5" r="1.5"/>
-      <circle cx="14.5" cy="9.5" r="1.5"/>
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 13.5c-1.38 0-2.5 1.12-2.5 2.5 0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5c0-1.38-1.12-2.5-2.5-2.5z"/>
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2C6.48 2 2 6.48 2 12c0 5.52 4.48 10 10 10s10-4.48 10-10S17.52 2 12 2z"/>
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16c1.5-1 3.5-1.5 4-1.5s2.5.5 4 1.5"/>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
     </svg>
   ),
   'Objects': (
@@ -44,8 +40,7 @@ const CategoryIcons: Record<Category, React.ReactNode> = {
   ),
   'Sports': (
     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <ellipse cx="12" cy="12" rx="7" ry="4.5" strokeWidth={2}/>
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 7.5v9M8.5 10.5h7M8.5 13.5h7"/>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
     </svg>
   ),
   'Brands': (
@@ -62,7 +57,7 @@ const CategoryIcons: Record<Category, React.ReactNode> = {
 
 const RandomIcon = (
   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
   </svg>
 );
 
@@ -108,6 +103,30 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
     return () => {
       window.removeEventListener('resize', checkOrientation);
       window.removeEventListener('orientationchange', checkOrientation);
+    };
+  }, []);
+
+  // Prevent page scrolling - only allow scrolling within the categories container
+  useEffect(() => {
+    const rootElement = document.getElementById('root');
+    if (!rootElement) return;
+
+    const preventPageScroll = (e: TouchEvent | WheelEvent) => {
+      const target = e.target as HTMLElement;
+      // Allow scrolling only within elements that have overflow-auto or overflow-y-auto
+      const isScrollableContainer = target.closest('.overflow-y-auto, .overflow-x-auto');
+      if (!isScrollableContainer) {
+        e.preventDefault();
+      }
+    };
+
+    // Prevent touch scrolling on the page
+    rootElement.addEventListener('touchmove', preventPageScroll, { passive: false });
+    rootElement.addEventListener('wheel', preventPageScroll, { passive: false });
+
+    return () => {
+      rootElement.removeEventListener('touchmove', preventPageScroll);
+      rootElement.removeEventListener('wheel', preventPageScroll);
     };
   }, []);
 
@@ -190,7 +209,7 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
   };
 
   return (
-    <div className="h-screen-safe w-screen flex flex-col safe-area-inset overflow-hidden">
+    <div className="h-screen-safe w-screen flex flex-col safe-area-inset overflow-hidden touch-none" style={{ maxHeight: '100dvh', height: '100dvh' }}>
       {/* Fixed top banner */}
       <div className="flex-shrink-0 flex items-center pt-6 pb-4 px-4 gap-4">
         <button
@@ -269,7 +288,7 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
       </div>
 
       {/* Fixed bottom section */}
-      <div className="flex-shrink-0 px-4 pb-4 space-y-4">
+      <div className="flex-shrink-0 px-4 pb-4 space-y-4 overflow-hidden">
         <div>
           <label className="flex items-center gap-2 text-gray-300 font-medium mb-3">
             <span>{ClockIcon}</span>
