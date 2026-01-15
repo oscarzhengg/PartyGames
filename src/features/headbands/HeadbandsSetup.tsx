@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { CategorySquare } from '../../components/CategorySquare';
@@ -14,70 +14,11 @@ interface ValidationErrors {
   categories?: string;
 }
 
-type PermissionState = 'unknown' | 'prompt' | 'granted' | 'denied' | 'unsupported';
-
 export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const [categoryMode, setCategoryMode] = useState<'select' | 'random'>('select');
   const [guessTimeSeconds, setGuessTimeSeconds] = useState(30);
   const [errors, setErrors] = useState<ValidationErrors>({});
-  const [permissionState, setPermissionState] = useState<PermissionState>('unknown');
-  const [isRequesting, setIsRequesting] = useState(false);
-
-  // Check if device orientation is supported
-  useEffect(() => {
-    const isSecureContext = window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost';
-    const hasOrientationEvent = typeof DeviceOrientationEvent !== 'undefined';
-    
-    if (!isSecureContext) {
-      setPermissionState('unsupported');
-    } else if (!hasOrientationEvent) {
-      setPermissionState('unsupported');
-    } else if (
-      typeof DeviceOrientationEvent !== 'undefined' &&
-      typeof (DeviceOrientationEvent as any).requestPermission === 'function'
-    ) {
-      // iOS 13+ requires permission
-      setPermissionState('prompt');
-    } else {
-      // Permission not required, already granted
-      setPermissionState('granted');
-    }
-  }, []);
-
-  const requestPermission = async (): Promise<boolean> => {
-    if (permissionState === 'unsupported') {
-      return false;
-    }
-
-    if (
-      typeof DeviceOrientationEvent !== 'undefined' &&
-      typeof (DeviceOrientationEvent as any).requestPermission === 'function'
-    ) {
-      try {
-        setIsRequesting(true);
-        const response = await (DeviceOrientationEvent as any).requestPermission();
-        if (response === 'granted') {
-          setPermissionState('granted');
-          setIsRequesting(false);
-          return true;
-        } else {
-          setPermissionState('denied');
-          setIsRequesting(false);
-          return false;
-        }
-      } catch (error) {
-        console.error('Error requesting device orientation permission:', error);
-        setPermissionState('denied');
-        setIsRequesting(false);
-        return false;
-      }
-    } else {
-      // Permission not required
-      setPermissionState('granted');
-      return true;
-    }
-  };
 
   const validate = (): boolean => {
     const newErrors: ValidationErrors = {};
@@ -90,18 +31,9 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleContinue = async () => {
+  const handleContinue = () => {
     if (!validate()) return;
 
-    // Request permission first if needed
-    if (permissionState === 'prompt' || permissionState === 'unknown') {
-      const granted = await requestPermission();
-      if (!granted) {
-        return; // Don't continue if permission denied
-      }
-    }
-
-    // Permission granted or not needed, continue with game
     let categorySelection: HeadbandsCategorySelection;
     
     if (categoryMode === 'random') {
@@ -237,32 +169,6 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
           </div>
         </Card>
 
-        {permissionState === 'denied' && (
-          <Card className="bg-red-500/20 border border-red-500/50">
-            <div className="text-center space-y-2">
-              <p className="text-red-400 font-medium">
-                Motion & Orientation access denied
-              </p>
-              <p className="text-red-300 text-xs">
-                Please enable motion & orientation in your browser settings to use tilt detection.
-              </p>
-            </div>
-          </Card>
-        )}
-
-        {permissionState === 'unsupported' && (
-          <Card className="bg-yellow-500/20 border border-yellow-500/50">
-            <div className="text-center space-y-2">
-              <p className="text-yellow-400 font-medium">
-                Tilt detection not available
-              </p>
-              <p className="text-yellow-300 text-xs">
-                Your device or browser doesn't support tilt detection. The game will use button controls instead.
-              </p>
-            </div>
-          </Card>
-        )}
-
         <div className="flex gap-4">
           <Button onClick={onBack} variant="secondary" className="flex-1">
             Back
@@ -271,13 +177,9 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
             onClick={handleContinue} 
             variant="primary" 
             className="flex-1"
-            disabled={
-              (categoryMode === 'select' && selectedCategories.length === 0) ||
-              isRequesting ||
-              permissionState === 'denied'
-            }
+            disabled={categoryMode === 'select' && selectedCategories.length === 0}
           >
-            {isRequesting ? 'Requesting Permission...' : 'Start Game'}
+            Start Game
           </Button>
         </div>
       </div>
