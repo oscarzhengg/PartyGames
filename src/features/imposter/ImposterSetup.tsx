@@ -85,11 +85,11 @@ export function ImposterSetup({
   return (
     <div className="h-screen-safe w-screen flex flex-col overflow-y-auto safe-area-inset">
       {/* Fixed top banner */}
-      <div className="flex-shrink-0 flex items-center pt-6 pb-4 px-4 gap-4">
+      <div className="flex-shrink-0 flex items-center justify-center pt-6 pb-4 px-4 relative">
         <button
           type="button"
           onClick={onBack}
-          className="p-2 text-gray-400 hover:text-white transition-colors active:scale-95 flex-shrink-0"
+          className="absolute left-4 p-2 text-gray-400 hover:text-white transition-colors active:scale-95 flex-shrink-0"
           aria-label="Back"
         >
           {BackIcon}
@@ -229,7 +229,7 @@ export function ImposterSetup({
             className="flex-1"
             disabled={selectedCategories.length === 0}
           >
-            {selectedCategories.length === 0 ? 'Select a category' : 'Continue'}
+            {selectedCategories.length === 0 ? 'Select a category' : 'Start Game'}
           </Button>
         </div>
       </div>

@@ -106,8 +106,11 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
     };
   }, []);
 
-  // Prevent page scrolling - only allow scrolling within the categories container
+  // Prevent page scrolling in portrait - only allow scrolling within the categories container
+  // In landscape, allow page scrolling
   useEffect(() => {
+    if (isLandscape) return; // Allow scrolling in landscape mode
+
     const rootElement = document.getElementById('root');
     if (!rootElement) return;
 
@@ -128,7 +131,7 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
       rootElement.removeEventListener('touchmove', preventPageScroll);
       rootElement.removeEventListener('wheel', preventPageScroll);
     };
-  }, []);
+  }, [isLandscape]);
 
   // Sort categories alphabetically
   const sortedCategories = [...CATEGORIES].sort();
@@ -209,7 +212,7 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
   };
 
   return (
-    <div className="h-screen-safe w-screen flex flex-col safe-area-inset overflow-hidden touch-none" style={{ maxHeight: '100dvh', height: '100dvh' }}>
+    <div className={`h-screen-safe w-screen flex flex-col safe-area-inset ${isLandscape ? 'overflow-y-auto' : 'overflow-hidden touch-none'}`} style={isLandscape ? {} : { maxHeight: '100dvh', height: '100dvh' }}>
       {/* Fixed top banner */}
       <div className="flex-shrink-0 flex items-center pt-6 pb-4 px-4 gap-4">
         <button
@@ -224,7 +227,7 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
       </div>
 
       {/* Scrollable categories container */}
-      <div className="flex-1 min-h-0 px-4 py-2 overflow-hidden">
+      <div className={`flex-1 min-h-0 px-4 py-2 ${isLandscape ? '' : 'overflow-hidden'}`}>
         <Card className="h-full flex flex-col overflow-hidden !p-4">
           {/* Scrollable category container */}
           {/* Portrait: 2 columns vertical scroll, Landscape: 1 row horizontal scroll */}

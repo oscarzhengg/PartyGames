@@ -35,9 +35,26 @@ export function Home({ onGetStarted }: HomeProps) {
         </div>
 
         {/* Buttons */}
-        <div className="space-y-4">
-          <Button onClick={onGetStarted} fullWidth variant="primary">
-            Get Started
+        <div className="space-y-4 flex justify-center">
+          <Button 
+            onClick={onGetStarted} 
+            variant="primary"
+            className="flex items-center gap-2 max-w-xs"
+          >
+            <span>Game Selection</span>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
           </Button>
         </div>
       </div>
