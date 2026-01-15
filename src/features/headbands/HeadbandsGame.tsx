@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import type { HeadbandsSettings } from './types';
 import { getShuffledWords } from './logic';
+import { useLandscapeTilt, type TiltAction } from './useLandscapeTilt';
 
 interface HeadbandsGameProps {
   settings: HeadbandsSettings;
@@ -83,7 +84,7 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
     }
   }, [phase]);
 
-  const handleNextWord = () => {
+  const handleNextWord = useCallback(() => {
     setCurrentWordIndex((prev) => {
       if (prev >= words.length - 1) {
         // All words used, restart from beginning
@@ -91,13 +92,13 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
       }
       return prev + 1;
     });
-  };
+  }, [words.length]);
 
-  const handleTap = (side: 'left' | 'right') => {
+  const handleAnswer = useCallback((isCorrect: boolean) => {
     if (phase !== 'playing') return;
 
-    if (side === 'left') {
-      // Left tap = correct - show green, then move to next word
+    if (isCorrect) {
+      // Correct - show green, then move to next word
       setWordColor('green');
       setCorrectGuessed((prev) => prev + 1);
       setTotalGuessed((prev) => prev + 1);
@@ -106,7 +107,7 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
         setWordColor('white');
       }, 500);
     } else {
-      // Right tap = wrong/pass - show red, then move to next word
+      // Wrong/pass - show red, then move to next word
       setWordColor('red');
       setTotalGuessed((prev) => prev + 1);
       setTimeout(() => {
@@ -114,7 +115,26 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
         setWordColor('white');
       }, 500);
     }
+  }, [phase, handleNextWord]);
+
+  const handleTap = (side: 'left' | 'right') => {
+    handleAnswer(side === 'left');
   };
+
+  // Tilt detection for landscape mode
+  const handleTilt = useCallback((action: TiltAction) => {
+    if (action === 'correct') {
+      handleAnswer(true);
+    } else if (action === 'wrong') {
+      handleAnswer(false);
+    }
+  }, [handleAnswer]);
+
+  const { isLandscape, permissionGranted } = useLandscapeTilt({
+    onTilt: handleTilt,
+    enabled: phase === 'playing',
+    tiltThreshold: 25,
+  });
 
   const handleRestart = () => {
     // Reshuffle words for new game
