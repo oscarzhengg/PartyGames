@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import type { HeadbandsSettings } from './types';
 import { getShuffledWords } from './logic';
-import { useLandscapeTilt, type TiltAction } from './useLandscapeTilt';
 
 interface HeadbandsGameProps {
   settings: HeadbandsSettings;
@@ -21,6 +20,9 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
   const [correctGuessed, setCorrectGuessed] = useState(0);
   const [totalGuessed, setTotalGuessed] = useState(0);
   const [wordColor, setWordColor] = useState<'white' | 'green' | 'red'>('white');
+  const isProcessingTap = useRef(false);
+  const timeoutRef = useRef<number | null>(null);
+  const touchHandledRef = useRef(false);
 
   // Countdown effect
   useEffect(() => {
@@ -84,7 +86,7 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
     }
   }, [phase]);
 
-  const handleNextWord = useCallback(() => {
+  const handleNextWord = () => {
     setCurrentWordIndex((prev) => {
       if (prev >= words.length - 1) {
         // All words used, restart from beginning
@@ -92,49 +94,58 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
       }
       return prev + 1;
     });
-  }, [words.length]);
+  };
 
-  const handleAnswer = useCallback((isCorrect: boolean) => {
+  const handleTap = (side: 'left' | 'right', event?: React.TouchEvent | React.MouseEvent) => {
     if (phase !== 'playing') return;
+    if (isProcessingTap.current) return; // Prevent multiple taps
 
-    if (isCorrect) {
-      // Correct - show green, then move to next word
+    // Prevent default to stop any other event handlers
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    // Mark as processing
+    isProcessingTap.current = true;
+
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    if (side === 'left') {
+      // Left tap = correct - show green, then move to next word
       setWordColor('green');
       setCorrectGuessed((prev) => prev + 1);
       setTotalGuessed((prev) => prev + 1);
-      setTimeout(() => {
+      timeoutRef.current = window.setTimeout(() => {
         handleNextWord();
         setWordColor('white');
+        isProcessingTap.current = false;
+        timeoutRef.current = null;
       }, 500);
     } else {
-      // Wrong/pass - show red, then move to next word
+      // Right tap = wrong/pass - show red, then move to next word
       setWordColor('red');
       setTotalGuessed((prev) => prev + 1);
-      setTimeout(() => {
+      timeoutRef.current = window.setTimeout(() => {
         handleNextWord();
         setWordColor('white');
+        isProcessingTap.current = false;
+        timeoutRef.current = null;
       }, 500);
     }
-  }, [phase, handleNextWord]);
-
-
-  // Tilt detection for landscape mode
-  const handleTilt = useCallback((action: TiltAction) => {
-    if (action === 'correct') {
-      handleAnswer(true);
-    } else if (action === 'wrong') {
-      handleAnswer(false);
-    }
-  }, [handleAnswer]);
-
-  // Enable tilt detection in landscape mode
-  useLandscapeTilt({
-    onTilt: handleTilt,
-    enabled: phase === 'playing',
-    tiltThreshold: 25,
-  });
+  };
 
   const handleRestart = () => {
+    // Clear any pending timeouts
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    isProcessingTap.current = false;
+    
     // Reshuffle words for new game
     setWords(getShuffledWords(settings.selectedCategories));
     setPhase('countdown');
@@ -235,12 +246,53 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
         </div>
       </div>
 
-      {/* Centered word display */}
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center px-6">
-          <h2 className={`text-7xl md:text-8xl font-bold break-words transition-colors duration-200 ${getWordColorClass()}`}>
-            {currentWord}
-          </h2>
+      {/* Split screen - left and right halves (invisible, for tap detection) */}
+      <div className="flex-1 flex relative">
+        {/* Left half - tap for correct */}
+        <div
+          className="flex-1 cursor-pointer touch-none"
+          onClick={(e) => {
+            // Only handle click if touch wasn't already handled
+            if (!touchHandledRef.current) {
+              handleTap('left', e);
+            }
+            touchHandledRef.current = false;
+          }}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            touchHandledRef.current = true;
+            handleTap('left', e);
+          }}
+          onTouchEnd={(e) => e.preventDefault()}
+        />
+
+        {/* Right half - tap for wrong/pass */}
+        <div
+          className="flex-1 cursor-pointer touch-none"
+          onClick={(e) => {
+            // Only handle click if touch wasn't already handled
+            if (!touchHandledRef.current) {
+              handleTap('right', e);
+            }
+            touchHandledRef.current = false;
+          }}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            touchHandledRef.current = true;
+            handleTap('right', e);
+          }}
+          onTouchEnd={(e) => e.preventDefault()}
+        />
+
+        {/* Centered word overlay */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="text-center px-6">
+            <h2 className={`text-7xl md:text-8xl font-bold break-words transition-colors duration-200 ${getWordColorClass()}`}>
+              {currentWord}
+            </h2>
+          </div>
         </div>
       </div>
     </div>

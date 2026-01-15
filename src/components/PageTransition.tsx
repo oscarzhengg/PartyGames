@@ -73,7 +73,7 @@ export function PageTransition({
   };
 
   return (
-    <div className={`absolute inset-0 overflow-y-auto ${getTransitionClasses()} ${className}`}>
+    <div className={`absolute inset-0 ${getTransitionClasses()} ${className}`}>
       {children}
     </div>
   );

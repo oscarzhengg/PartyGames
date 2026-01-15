@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { CategorySquare } from '../../components/CategorySquare';
@@ -14,64 +14,11 @@ interface ValidationErrors {
   categories?: string;
 }
 
-type MotionPermissionState = 'unknown' | 'prompt' | 'granted' | 'denied' | 'unsupported';
-
 export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const [categoryMode, setCategoryMode] = useState<'select' | 'random'>('select');
   const [guessTimeSeconds, setGuessTimeSeconds] = useState(30);
   const [errors, setErrors] = useState<ValidationErrors>({});
-  const [motionPermission, setMotionPermission] = useState<MotionPermissionState>('unknown');
-  const [isRequesting, setIsRequesting] = useState(false);
-
-  // Check motion permission status on mount
-  useEffect(() => {
-    const checkPermission = () => {
-      const isSecureContext = window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost';
-      const hasOrientationEvent = typeof DeviceOrientationEvent !== 'undefined';
-
-      if (!isSecureContext) {
-        setMotionPermission('unsupported');
-        return;
-      }
-
-      if (!hasOrientationEvent) {
-        setMotionPermission('unsupported');
-        return;
-      }
-
-      // Check if permission request is needed (iOS 13+)
-      if (
-        typeof DeviceOrientationEvent !== 'undefined' &&
-        typeof (DeviceOrientationEvent as any).requestPermission === 'function'
-      ) {
-        // Permission is required - check if already granted by testing
-        let permissionDetected = false;
-        const testHandler = (event: DeviceOrientationEvent) => {
-          if (event.gamma !== null && event.gamma !== undefined) {
-            permissionDetected = true;
-            setMotionPermission('granted');
-            window.removeEventListener('deviceorientation', testHandler);
-          }
-        };
-        
-        window.addEventListener('deviceorientation', testHandler);
-        
-        // Set to prompt if not already granted after a delay
-        setTimeout(() => {
-          window.removeEventListener('deviceorientation', testHandler);
-          if (!permissionDetected) {
-            setMotionPermission('prompt');
-          }
-        }, 500);
-      } else {
-        // Permission not required
-        setMotionPermission('granted');
-      }
-    };
-
-    checkPermission();
-  }, []);
 
   const validate = (): boolean => {
     const newErrors: ValidationErrors = {};
@@ -84,48 +31,8 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const requestMotionPermission = async () => {
-    if (motionPermission === 'unsupported' || motionPermission === 'granted') {
-      return;
-    }
-
-    if (
-      typeof DeviceOrientationEvent !== 'undefined' &&
-      typeof (DeviceOrientationEvent as any).requestPermission === 'function'
-    ) {
-      try {
-        setIsRequesting(true);
-        const response = await (DeviceOrientationEvent as any).requestPermission();
-        if (response === 'granted') {
-          setMotionPermission('granted');
-        } else {
-          setMotionPermission('denied');
-        }
-      } catch (error) {
-        console.error('Error requesting motion permission:', error);
-        setMotionPermission('denied');
-      } finally {
-        setIsRequesting(false);
-      }
-    } else {
-      // Permission not required
-      setMotionPermission('granted');
-    }
-  };
-
   const handleContinue = () => {
     if (!validate()) return;
-
-    // Request motion permission if needed
-    if (motionPermission === 'prompt' || motionPermission === 'unknown') {
-      requestMotionPermission();
-      return; // Don't continue yet, wait for permission
-    }
-
-    // Don't continue if permission was denied (they can still try again)
-    if (motionPermission === 'denied') {
-      return;
-    }
 
     let categorySelection: HeadbandsCategorySelection;
     
@@ -160,8 +67,8 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
       : 'No category selected';
 
   return (
-    <div className="min-h-full p-6 py-12">
-      <div className="max-w-2xl mx-auto space-y-6 pb-20">
+    <div className="min-h-screen p-6 py-12">
+      <div className="max-w-2xl mx-auto space-y-6">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">Headbands Setup</h1>
           <p className="text-gray-400">Configure your game settings</p>
@@ -262,69 +169,6 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
           </div>
         </Card>
 
-        {/* Motion permission section */}
-        {(motionPermission === 'prompt' || motionPermission === 'unknown') && (
-          <Card className="bg-yellow-500/20 border border-yellow-500/50">
-            <div className="text-center space-y-3">
-              <p className="text-yellow-400 font-medium">
-                Motion Detection Required
-              </p>
-              <p className="text-yellow-300 text-xs">
-                Tilt controls require motion & orientation access. Please enable it to use tilt controls in landscape mode.
-              </p>
-              <Button
-                onClick={requestMotionPermission}
-                variant="primary"
-                className="w-full"
-                disabled={isRequesting}
-              >
-                {isRequesting ? 'Requesting...' : 'Enable Motion Detection'}
-              </Button>
-            </div>
-          </Card>
-        )}
-
-        {motionPermission === 'granted' && (
-          <Card className="bg-green-500/20 border border-green-500/50">
-            <div className="text-center">
-              <p className="text-green-400 font-medium text-sm">
-                ✓ Motion detection enabled
-              </p>
-            </div>
-          </Card>
-        )}
-
-        {motionPermission === 'denied' && (
-          <Card className="bg-red-500/20 border border-red-500/50">
-            <div className="text-center space-y-3">
-              <p className="text-red-400 font-medium">
-                Motion Detection Denied
-              </p>
-              <p className="text-red-300 text-xs">
-                Tilt controls won't work. You can still play using the game, but tilt detection is disabled.
-              </p>
-              <Button
-                onClick={requestMotionPermission}
-                variant="secondary"
-                className="w-full"
-                disabled={isRequesting}
-              >
-                {isRequesting ? 'Requesting...' : 'Try Again'}
-              </Button>
-            </div>
-          </Card>
-        )}
-
-        {motionPermission === 'unsupported' && (
-          <Card className="bg-gray-500/20 border border-gray-500/50">
-            <div className="text-center">
-              <p className="text-gray-400 text-sm">
-                Motion detection not available on this device/browser
-              </p>
-            </div>
-          </Card>
-        )}
-
         <div className="flex gap-4">
           <Button onClick={onBack} variant="secondary" className="flex-1">
             Back
@@ -333,15 +177,9 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
             onClick={handleContinue} 
             variant="primary" 
             className="flex-1"
-            disabled={
-              (categoryMode === 'select' && selectedCategories.length === 0) ||
-              isRequesting ||
-              (motionPermission === 'prompt' || motionPermission === 'unknown')
-            }
+            disabled={categoryMode === 'select' && selectedCategories.length === 0}
           >
-            {motionPermission === 'prompt' || motionPermission === 'unknown' 
-              ? 'Enable Motion First' 
-              : 'Start Game'}
+            Start Game
           </Button>
         </div>
       </div>
