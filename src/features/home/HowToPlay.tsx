@@ -9,7 +9,6 @@ export function HowToPlay({ onBack }: HowToPlayProps) {
   return (
     <div className="h-screen-safe w-screen flex flex-col overflow-y-auto safe-area-inset">
       <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full p-4 py-6 space-y-6">
-      <div className="max-w-2xl mx-auto space-y-6">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent mb-2">
             How to Play
