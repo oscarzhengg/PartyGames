@@ -14,7 +14,11 @@ const CategoryIcons: Record<Category, React.ReactNode> = {
   ),
   'Animals': (
     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+      <circle cx="9.5" cy="9.5" r="1.5"/>
+      <circle cx="14.5" cy="9.5" r="1.5"/>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 13.5c-1.38 0-2.5 1.12-2.5 2.5 0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5c0-1.38-1.12-2.5-2.5-2.5z"/>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2C6.48 2 2 6.48 2 12c0 5.52 4.48 10 10 10s10-4.48 10-10S17.52 2 12 2z"/>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16c1.5-1 3.5-1.5 4-1.5s2.5.5 4 1.5"/>
     </svg>
   ),
   'Objects': (
@@ -40,7 +44,8 @@ const CategoryIcons: Record<Category, React.ReactNode> = {
   ),
   'Sports': (
     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <ellipse cx="12" cy="12" rx="7" ry="4.5" strokeWidth={2}/>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 7.5v9M8.5 10.5h7M8.5 13.5h7"/>
     </svg>
   ),
   'Brands': (
@@ -187,27 +192,27 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
   return (
     <div className="h-screen-safe w-screen flex flex-col safe-area-inset overflow-hidden">
       {/* Fixed top banner */}
-      <div className="flex-shrink-0 flex items-center justify-center pt-6 pb-4 px-4 relative">
+      <div className="flex-shrink-0 flex items-center pt-6 pb-4 px-4 gap-4">
         <button
           type="button"
           onClick={onBack}
-          className="absolute left-4 p-2 text-gray-400 hover:text-white transition-colors active:scale-95"
+          className="p-2 text-gray-400 hover:text-white transition-colors active:scale-95 flex-shrink-0"
           aria-label="Back"
         >
           {BackIcon}
         </button>
-        <h1 className="text-4xl font-bold text-white">Headbands Category</h1>
+        <h1 className="text-2xl font-bold text-white">Headbands Categories</h1>
       </div>
 
       {/* Scrollable categories container */}
-      <div className="flex-1 min-h-0 px-4 py-2">
+      <div className="flex-1 min-h-0 px-4 py-2 overflow-hidden">
         <Card className="h-full flex flex-col overflow-hidden !p-4">
           {/* Scrollable category container */}
           {/* Portrait: 2 columns vertical scroll, Landscape: 1 row horizontal scroll */}
           <div className="flex-1 min-h-0 overflow-hidden">
             {isLandscape ? (
               /* Landscape layout: 1 row, horizontal scroll */
-              <div className="h-full overflow-x-auto overflow-y-hidden">
+              <div className="h-full overflow-x-auto overflow-y-hidden scrollbar-hide">
                 <div className="flex gap-2 h-full items-start pb-2" style={{ width: 'max-content' }}>
                   {/* Random option first */}
                   <div className="flex-shrink-0 w-24">
@@ -233,7 +238,7 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
               </div>
             ) : (
               /* Portrait layout: 2 columns, vertical scroll */
-              <div className="h-full overflow-y-auto overflow-x-hidden">
+              <div className="h-full overflow-y-auto overflow-x-hidden scrollbar-hide">
                 <div className="grid grid-cols-2 gap-2 pb-2">
                   {/* Random option first */}
                   <CategorySquare
