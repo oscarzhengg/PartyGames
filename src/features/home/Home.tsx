@@ -6,7 +6,7 @@ interface HomeProps {
 
 export function Home({ onGetStarted }: HomeProps) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6">
+    <div className="h-screen-safe w-screen flex flex-col items-center justify-center p-6 safe-area-inset">
       <div className="max-w-md w-full space-y-8">
         {/* Logo/Icon Placeholder */}
         <div className="flex justify-center">

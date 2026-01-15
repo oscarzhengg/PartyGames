@@ -19,7 +19,7 @@ export function AllReady({ secretWord, roleAssignment, onBackToHome, onSetupAgai
     : `Players ${roleAssignment.imposters.join(', ')}`;
 
   return (
-    <div className="h-screen w-screen flex items-center justify-center p-4">
+    <div className="h-screen-safe w-screen flex items-center justify-center p-4 safe-area-inset">
       <div className="max-w-md w-full space-y-6">
         {!showResults ? (
           <>

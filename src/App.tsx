@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Home } from './features/home/Home';
 import { ModeSelection } from './features/ModeSelection';
 import { ImposterSetup } from './features/imposter/ImposterSetup';
@@ -32,6 +32,26 @@ function App() {
   const [imposterSettings, setImposterSettings] = useState<ImposterSettings | null>(null);
   const [roleAssignment, setRoleAssignment] = useState<RoleAssignment | null>(null);
   const [headbandsSettings, setHeadbandsSettings] = useState<HeadbandsSettings | null>(null);
+
+  // Update viewport height CSS variable for iPhone orientation changes
+  useEffect(() => {
+    const updateViewportHeight = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+
+    updateViewportHeight();
+    window.addEventListener('resize', updateViewportHeight);
+    window.addEventListener('orientationchange', () => {
+      // Delay to ensure accurate height after orientation change
+      setTimeout(updateViewportHeight, 100);
+    });
+
+    return () => {
+      window.removeEventListener('resize', updateViewportHeight);
+      window.removeEventListener('orientationchange', updateViewportHeight);
+    };
+  }, []);
 
   const navigateTo = (screen: Screen) => {
     setPreviousScreen(currentScreen);
@@ -129,7 +149,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0a0e27] to-black relative overflow-hidden">
+    <div className="h-screen-safe w-screen bg-gradient-to-b from-[#0a0e27] to-black relative overflow-hidden">
       <PageTransition isActive={currentScreen === 'home'} direction="fade">
         {currentScreen === 'home' && (
           <Home onGetStarted={handleGetStarted} />

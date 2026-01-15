@@ -169,7 +169,7 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
 
   if (phase === 'countdown') {
     return (
-      <div className="h-screen w-screen flex items-center justify-center">
+      <div className="h-screen-safe w-screen flex items-center justify-center safe-area-inset">
         <div className="text-center">
           <div className="text-9xl font-bold text-white mb-4 animate-pulse">
             {countdown}
@@ -182,7 +182,7 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
 
   if (phase === 'finished') {
     return (
-      <div className="h-screen w-screen flex items-center justify-center p-4">
+      <div className="h-screen-safe w-screen flex items-center justify-center p-4 safe-area-inset">
         <Card className="max-w-md w-full">
           <div className="text-center space-y-6">
             <div>
@@ -238,7 +238,7 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col relative overflow-hidden touch-none">
+    <div className="h-screen-safe w-screen flex flex-col relative overflow-hidden touch-none safe-area-inset">
       {/* Timer at top */}
       <div className="text-center pt-4 pb-2 flex-shrink-0">
         <div className="text-4xl font-bold text-white">

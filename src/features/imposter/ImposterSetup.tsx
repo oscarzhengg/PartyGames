@@ -78,7 +78,7 @@ export function ImposterSetup({
     : `${selectedCategories.length} categories`;
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-y-auto">
+    <div className="h-screen-safe w-screen flex flex-col overflow-y-auto safe-area-inset">
       <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full p-4 py-6 space-y-6">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">Imposter Setup</h1>
