@@ -10,7 +10,7 @@ interface HeadbandsGameProps {
   onBack: () => void;
 }
 
-type GamePhase = 'countdown' | 'playing' | 'paused';
+type GamePhase = 'countdown' | 'playing' | 'paused' | 'finished';
 
 export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
   const [words] = useState(() => getShuffledWords(settings.selectedCategories));
@@ -21,6 +21,7 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
   const [isPaused, setIsPaused] = useState(false);
   const [lastTiltAction, setLastTiltAction] = useState<TiltAction>(null);
   const [tiltEnabled, setTiltEnabled] = useState(false);
+  const [wordsGuessed, setWordsGuessed] = useState(0); // Track how many words were correctly guessed/passed
 
   // Countdown effect
   useEffect(() => {
@@ -40,13 +41,14 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
     return () => clearTimeout(timer);
   }, [phase, countdown, settings.guessTimeSeconds]);
 
-  // Timer effect
+  // Timer effect - constant timer for the entire round
   useEffect(() => {
     if (phase !== 'playing' || isPaused) return;
 
     if (timeRemaining <= 0) {
-      // Time's up - move to next word
-      handleNextWord();
+      // Time's up - end the game
+      setPhase('finished');
+      setTiltEnabled(false);
       return;
     }
 
@@ -65,9 +67,8 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
       }
       return prev + 1;
     });
-    setTimeRemaining(settings.guessTimeSeconds);
     setLastTiltAction(null);
-  }, [words.length, settings.guessTimeSeconds]);
+  }, [words.length]);
 
   const handlePreviousWord = useCallback(() => {
     setCurrentWordIndex((prev) => {
@@ -76,9 +77,8 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
       }
       return prev - 1;
     });
-    setTimeRemaining(settings.guessTimeSeconds);
     setLastTiltAction(null);
-  }, [words.length, settings.guessTimeSeconds]);
+  }, [words.length]);
 
   const handleTilt = useCallback(
     (action: TiltAction) => {
@@ -88,6 +88,7 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
 
       if (action === 'correct' || action === 'pass') {
         // Move to next word on correct or pass
+        setWordsGuessed((prev) => prev + 1);
         setTimeout(() => {
           handleNextWord();
         }, 500);
@@ -97,7 +98,12 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
     [tiltEnabled, phase, handleNextWord]
   );
 
-  useTiltDetection({
+  const {
+    requestPermission,
+    permissionState,
+    isSupported,
+    currentOrientation,
+  } = useTiltDetection({
     onTilt: handleTilt,
     enabled: tiltEnabled && phase === 'playing',
     tiltThreshold: 25,
@@ -115,6 +121,7 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
     setIsPaused(false);
     setTiltEnabled(false);
     setLastTiltAction(null);
+    setWordsGuessed(0);
   };
 
   const currentWord = words[currentWordIndex] || '';
@@ -167,6 +174,49 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
     );
   }
 
+  if (phase === 'finished') {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <Card className="max-w-md w-full">
+          <div className="text-center space-y-6">
+            <div>
+              <h2 className="text-4xl font-bold text-white mb-2">Time's Up!</h2>
+              <p className="text-gray-400">Great job!</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-gray-800 rounded-lg p-6">
+                <div className="text-5xl font-bold text-green-400 mb-2">
+                  {wordsGuessed}
+                </div>
+                <div className="text-gray-300 text-sm">
+                  Words guessed in {formatTime(settings.guessTimeSeconds)}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <Button
+                onClick={handleRestart}
+                variant="primary"
+                className="flex-1"
+              >
+                Play Again
+              </Button>
+              <Button
+                onClick={onBack}
+                variant="secondary"
+                className="flex-1"
+              >
+                Exit
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen p-6 py-12">
       <div className="max-w-2xl mx-auto space-y-6">
@@ -212,50 +262,124 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
               {getTiltFeedbackText()}
             </div>
 
-            {/* Tilt instructions */}
-            <div className="pt-6 space-y-2 text-sm text-gray-400">
-              <p>Tilt your phone to indicate:</p>
-              <div className="flex flex-col gap-1 items-center">
-                <div className="flex items-center gap-2">
-                  <span className="text-green-400">↑</span>
-                  <span>Tilt Up = Correct</span>
+            {/* Tilt instructions and permission */}
+            <div className="pt-6 space-y-4 text-sm">
+              {permissionState === 'prompt' && (
+                <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-4 space-y-3">
+                  <p className="text-yellow-400 font-medium">
+                    Tilt detection requires permission
+                  </p>
+                  <Button
+                    onClick={requestPermission}
+                    variant="primary"
+                    className="w-full"
+                  >
+                    Enable Tilt Detection
+                  </Button>
+                  <p className="text-yellow-300 text-xs">
+                    On iOS, you'll need to grant motion & orientation access
+                  </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-red-400">↓</span>
-                  <span>Tilt Down = Wrong</span>
+              )}
+
+              {permissionState === 'denied' && (
+                <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4">
+                  <p className="text-red-400 font-medium mb-2">
+                    Tilt detection denied
+                  </p>
+                  <p className="text-red-300 text-xs mb-3">
+                    Please enable motion & orientation in your browser settings, or use the buttons below.
+                  </p>
+                  <Button
+                    onClick={requestPermission}
+                    variant="secondary"
+                    className="w-full"
+                  >
+                    Try Again
+                  </Button>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-yellow-400">↔</span>
-                  <span>Tilt Left/Right = Pass</span>
+              )}
+
+              {permissionState === 'unsupported' && (
+                <div className="bg-gray-500/20 border border-gray-500/50 rounded-lg p-4">
+                  <p className="text-gray-400 font-medium">
+                    Tilt detection not available
+                  </p>
+                  <p className="text-gray-300 text-xs mt-2">
+                    Your device or browser doesn't support tilt detection. Use the buttons below to navigate.
+                  </p>
                 </div>
-              </div>
+              )}
+
+              {permissionState === 'granted' && (
+                <div className="space-y-2 text-gray-400">
+                  <p className="text-green-400 font-medium">✓ Tilt detection active</p>
+                  <p className="text-xs">Tilt your phone to indicate:</p>
+                  <div className="flex flex-col gap-1 items-center mt-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-400">↑</span>
+                      <span>Tilt Up = Correct</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-red-400">↓</span>
+                      <span>Tilt Down = Wrong</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-yellow-400">↔</span>
+                      <span>Tilt Left/Right = Pass</span>
+                    </div>
+                  </div>
+                  {/* Debug info (can be removed in production) */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <div className="text-xs text-gray-500 mt-2">
+                      Debug: β={currentOrientation.beta?.toFixed(1) ?? 'N/A'}° 
+                      γ={currentOrientation.gamma?.toFixed(1) ?? 'N/A'}°
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {permissionState === 'unknown' && (
+                <div className="space-y-2 text-gray-400">
+                  <p>Loading tilt detection...</p>
+                </div>
+              )}
             </div>
           </div>
         </Card>
 
-        {/* Navigation buttons */}
-        <div className="flex gap-4">
-          <Button
-            onClick={handlePreviousWord}
-            variant="secondary"
-            className="flex-1"
-            disabled={isPaused}
-          >
-            ← Previous Word
-          </Button>
-          <Button
-            onClick={handleNextWord}
-            variant="primary"
-            className="flex-1"
-            disabled={isPaused}
-          >
-            Next Word →
-          </Button>
-        </div>
+        {/* Navigation buttons - only show if tilt is not available */}
+        {(permissionState === 'unsupported' || permissionState === 'denied') && (
+          <div className="flex gap-4">
+            <Button
+              onClick={handlePreviousWord}
+              variant="secondary"
+              className="flex-1"
+              disabled={isPaused}
+            >
+              ← Previous Word
+            </Button>
+            <Button
+              onClick={handleNextWord}
+              variant="primary"
+              className="flex-1"
+              disabled={isPaused}
+            >
+              Next Word →
+            </Button>
+          </div>
+        )}
 
-        {/* Word counter */}
-        <div className="text-center text-gray-400 text-sm">
-          Word {currentWordIndex + 1} of {words.length}
+        {/* Stats */}
+        <div className="flex justify-center gap-6 text-gray-400 text-sm">
+          <div className="text-center">
+            <div className="text-green-400 font-bold text-lg">{wordsGuessed}</div>
+            <div>Words guessed</div>
+          </div>
+          <div className="text-center">
+            <div className="text-white font-bold text-lg">{currentWordIndex + 1}</div>
+            <div>Current word</div>
+          </div>
         </div>
 
         {/* Back button */}
