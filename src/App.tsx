@@ -194,7 +194,7 @@ function App() {
         )}
       </PageTransition>
 
-      <PageTransition isActive={currentScreen === 'headbandsSetup'} direction={getTransitionDirection('headbandsSetup')}>
+      <PageTransition isActive={currentScreen === 'headbandsSetup'} direction={getTransitionDirection('headbandsSetup')} className="overflow-y-auto">
         {currentScreen === 'headbandsSetup' && (
           <HeadbandsSetup
             onContinue={handleHeadbandsSetupContinue}
