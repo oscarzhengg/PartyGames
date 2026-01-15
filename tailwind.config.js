@@ -26,9 +26,6 @@ export default {
         'screen-ios': '-webkit-fill-available',
         'screen-dynamic': 'calc(var(--vh, 1vh) * 100)',
       },
-      screens: {
-        'landscape': { 'raw': '(orientation: landscape)' },
-      },
     },
   },
   plugins: [],
