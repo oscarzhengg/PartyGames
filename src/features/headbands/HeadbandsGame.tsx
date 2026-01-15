@@ -55,6 +55,34 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
     return () => clearTimeout(timer);
   }, [phase, timeRemaining]);
 
+  // Disable scrolling during gameplay
+  useEffect(() => {
+    if (phase === 'playing') {
+      // Prevent scrolling on touch devices
+      const preventScroll = (e: TouchEvent) => {
+        e.preventDefault();
+      };
+
+      // Prevent scroll on wheel
+      const preventWheel = (e: WheelEvent) => {
+        e.preventDefault();
+      };
+
+      // Add event listeners
+      document.addEventListener('touchmove', preventScroll, { passive: false });
+      document.addEventListener('wheel', preventWheel, { passive: false });
+
+      // Disable body scroll
+      document.body.style.overflow = 'hidden';
+
+      return () => {
+        document.removeEventListener('touchmove', preventScroll);
+        document.removeEventListener('wheel', preventWheel);
+        document.body.style.overflow = '';
+      };
+    }
+  }, [phase]);
+
   const handleNextWord = () => {
     setCurrentWordIndex((prev) => {
       if (prev >= words.length - 1) {
@@ -181,7 +209,7 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col relative">
+    <div className="min-h-screen h-screen flex flex-col relative overflow-hidden touch-none">
       {/* Timer at top */}
       <div className="text-center pt-6">
         <div className="text-4xl font-bold text-white mb-1">
@@ -193,14 +221,22 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
       <div className="flex-1 flex relative">
         {/* Left half - tap for correct */}
         <div
-          className="flex-1 cursor-pointer"
+          className="flex-1 cursor-pointer touch-none"
           onClick={() => handleTap('left')}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            handleTap('left');
+          }}
         />
 
         {/* Right half - tap for wrong/pass */}
         <div
-          className="flex-1 cursor-pointer"
+          className="flex-1 cursor-pointer touch-none"
           onClick={() => handleTap('right')}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            handleTap('right');
+          }}
         />
 
         {/* Centered word overlay */}
