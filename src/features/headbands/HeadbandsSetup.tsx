@@ -17,9 +17,10 @@ interface ValidationErrors {
 export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const [isRandomSelected, setIsRandomSelected] = useState(false);
-  const [guessTimeSeconds, setGuessTimeSeconds] = useState(30);
+  const [guessTimeSeconds, setGuessTimeSeconds] = useState(60);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isLandscape, setIsLandscape] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // Detect orientation
   useEffect(() => {
@@ -88,6 +89,31 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
       setSelectedCategories([category]);
       setIsRandomSelected(false);
     }
+  };
+
+  const handlePresetClick = (seconds: number) => {
+    setGuessTimeSeconds(seconds);
+    triggerAnimation();
+  };
+
+  const handleStepperChange = (newValue: number) => {
+    setGuessTimeSeconds(newValue);
+    triggerAnimation();
+  };
+
+  const triggerAnimation = () => {
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 200);
+  };
+
+  const handleDecrement = () => {
+    const newValue = Math.max(10, guessTimeSeconds - 5);
+    handleStepperChange(newValue);
+  };
+
+  const handleIncrement = () => {
+    const newValue = Math.min(120, guessTimeSeconds + 5);
+    handleStepperChange(newValue);
   };
 
   return (
@@ -174,23 +200,59 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
       {/* Fixed bottom section */}
       <div className="flex-shrink-0 px-4 pb-4 space-y-4">
         <div>
-          <label className="block text-gray-300 font-medium mb-2">
-            Guess Time: {guessTimeSeconds} seconds
+          <label className="block text-gray-300 font-medium mb-3">
+            Guess Time
           </label>
-          <input
-            type="range"
-            min="10"
-            max="90"
-            value={guessTimeSeconds}
-            onChange={(e) => setGuessTimeSeconds(parseInt(e.target.value, 10))}
-            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500"
-            style={{
-              background: `linear-gradient(to right, rgb(34, 197, 94) 0%, rgb(34, 197, 94) ${((guessTimeSeconds - 10) / (90 - 10)) * 100}%, rgb(55, 65, 81) ${((guessTimeSeconds - 10) / (90 - 10)) * 100}%, rgb(55, 65, 81) 100%)`
-            }}
-          />
-          <div className="flex justify-between text-xs text-gray-400 mt-1">
-            <span>10s</span>
-            <span>90s</span>
+          
+          {/* Quick Select Presets */}
+          <div className="flex gap-3 mb-4">
+            {[30, 60, 90].map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => handlePresetClick(preset)}
+                className={`
+                  flex-1 py-4 px-4 rounded-xl font-bold text-lg transition-all duration-200
+                  border-4
+                  ${guessTimeSeconds === preset
+                    ? 'bg-gradient-to-br from-green-900 to-emerald-500 text-white border-emerald-400 shadow-lg shadow-green-500/30 scale-105'
+                    : 'bg-gray-800 text-gray-300 border-gray-700 hover:border-gray-600 active:scale-95'
+                  }
+                `}
+              >
+                {preset}s
+              </button>
+            ))}
+          </div>
+
+          {/* Custom Stepper */}
+          <div className="flex items-center justify-center gap-4">
+            <button
+              type="button"
+              onClick={handleDecrement}
+              disabled={guessTimeSeconds <= 10}
+              className="w-12 h-12 rounded-xl bg-gray-800 border-2 border-gray-700 text-white font-bold text-2xl hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+            >
+              −
+            </button>
+            <div className="min-w-[80px] text-center">
+              <span
+                className={`
+                  inline-block text-3xl font-bold text-white transition-transform duration-200
+                  ${isAnimating ? 'scale-110' : 'scale-100'}
+                `}
+              >
+                {guessTimeSeconds}s
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleIncrement}
+              disabled={guessTimeSeconds >= 120}
+              className="w-12 h-12 rounded-xl bg-gray-800 border-2 border-gray-700 text-white font-bold text-2xl hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+            >
+              +
+            </button>
           </div>
         </div>
 
