@@ -169,7 +169,7 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
 
   if (phase === 'countdown') {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="h-screen w-screen flex items-center justify-center">
         <div className="text-center">
           <div className="text-9xl font-bold text-white mb-4 animate-pulse">
             {countdown}
@@ -182,7 +182,7 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
 
   if (phase === 'finished') {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="h-screen w-screen flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <div className="text-center space-y-6">
             <div>
@@ -238,16 +238,16 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
   };
 
   return (
-    <div className="min-h-screen h-screen flex flex-col relative overflow-hidden touch-none">
+    <div className="h-screen w-screen flex flex-col relative overflow-hidden touch-none">
       {/* Timer at top */}
-      <div className="text-center pt-6">
-        <div className="text-4xl font-bold text-white mb-1">
+      <div className="text-center pt-4 pb-2 flex-shrink-0">
+        <div className="text-4xl font-bold text-white">
           {formatTime(timeRemaining)}
         </div>
       </div>
 
       {/* Split screen - left and right halves (invisible, for tap detection) */}
-      <div className="flex-1 flex relative">
+      <div className="flex-1 flex relative min-h-0">
         {/* Left half - tap for correct */}
         <div
           className="flex-1 cursor-pointer touch-none"

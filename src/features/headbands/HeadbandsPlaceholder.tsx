@@ -7,7 +7,7 @@ interface HeadbandsPlaceholderProps {
 
 export function HeadbandsPlaceholder({ onBack }: HeadbandsPlaceholderProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
+    <div className="h-screen w-screen flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-6">
         <Card className="text-center space-y-6">
           <div className="space-y-4">
