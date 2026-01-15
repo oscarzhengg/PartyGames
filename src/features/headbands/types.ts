@@ -1,6 +1,6 @@
 import type { Category } from '../imposter/wordBanks';
 
-export type HeadbandsCategorySelection = Category[] | 'random' | 'mixed';
+export type HeadbandsCategorySelection = Category[] | 'random';
 
 export interface HeadbandsSettings {
   selectedCategories: HeadbandsCategorySelection;

@@ -18,11 +18,16 @@ interface TiltDetectionResult {
 
 /**
  * Custom hook to detect device tilt using DeviceOrientationEvent
+ * Optimized for LANDSCAPE orientation
  * 
- * Gestures:
- * - Tilt up (beta > threshold): Correct
- * - Tilt down (beta < -threshold): Wrong
- * - Tilt left/right (gamma > threshold or < -threshold): Pass
+ * In landscape mode:
+ * - gamma: Left-to-right tilt (-90 to 90), where negative = left, positive = right
+ * - beta: Front-to-back tilt (-180 to 180), where positive = forward (screen towards you), negative = backward
+ * 
+ * Gestures (for landscape mode):
+ * - Tilt up (top of landscape screen up): gamma > threshold = Correct
+ * - Tilt down (bottom of landscape screen up): gamma < -threshold = Wrong
+ * - Tilt left/right (screen tilted left/right): abs(beta) > threshold = Pass
  */
 export function useTiltDetection({
   onTilt,
@@ -53,16 +58,17 @@ export function useTiltDetection({
 
       let action: TiltAction = null;
 
-      // Tilt up (forward) = Correct
-      if (beta > tiltThreshold) {
+      // For LANDSCAPE mode:
+      // Tilt up (top edge up, positive gamma) = Correct
+      if (gamma > tiltThreshold) {
         action = 'correct';
       }
-      // Tilt down (backward) = Wrong
-      else if (beta < -tiltThreshold) {
+      // Tilt down (bottom edge up, negative gamma) = Wrong
+      else if (gamma < -tiltThreshold) {
         action = 'wrong';
       }
-      // Tilt left or right = Pass
-      else if (Math.abs(gamma) > tiltThreshold) {
+      // Tilt left or right (screen tilted side to side, beta) = Pass
+      else if (Math.abs(beta) > tiltThreshold) {
         action = 'pass';
       }
 

@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
-import { NumberStepper } from '../../components/NumberStepper';
 import { CategorySquare } from '../../components/CategorySquare';
 import type { HeadbandsSettings, HeadbandsCategorySelection } from './types';
 import { CATEGORIES, type Category } from '../imposter/wordBanks';
@@ -15,40 +14,106 @@ interface ValidationErrors {
   categories?: string;
 }
 
+type PermissionState = 'unknown' | 'prompt' | 'granted' | 'denied' | 'unsupported';
+
 export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
-  const [categoryMode, setCategoryMode] = useState<'select' | 'random' | 'mixed'>('select');
-  const [guessTimeSeconds, setGuessTimeSeconds] = useState(60);
+  const [categoryMode, setCategoryMode] = useState<'select' | 'random'>('select');
+  const [guessTimeSeconds, setGuessTimeSeconds] = useState(30);
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [permissionState, setPermissionState] = useState<PermissionState>('unknown');
+  const [isRequesting, setIsRequesting] = useState(false);
+
+  // Check if device orientation is supported
+  useEffect(() => {
+    const isSecureContext = window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost';
+    const hasOrientationEvent = typeof DeviceOrientationEvent !== 'undefined';
+    
+    if (!isSecureContext) {
+      setPermissionState('unsupported');
+    } else if (!hasOrientationEvent) {
+      setPermissionState('unsupported');
+    } else if (
+      typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof (DeviceOrientationEvent as any).requestPermission === 'function'
+    ) {
+      // iOS 13+ requires permission
+      setPermissionState('prompt');
+    } else {
+      // Permission not required, already granted
+      setPermissionState('granted');
+    }
+  }, []);
+
+  const requestPermission = async (): Promise<boolean> => {
+    if (permissionState === 'unsupported') {
+      return false;
+    }
+
+    if (
+      typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof (DeviceOrientationEvent as any).requestPermission === 'function'
+    ) {
+      try {
+        setIsRequesting(true);
+        const response = await (DeviceOrientationEvent as any).requestPermission();
+        if (response === 'granted') {
+          setPermissionState('granted');
+          setIsRequesting(false);
+          return true;
+        } else {
+          setPermissionState('denied');
+          setIsRequesting(false);
+          return false;
+        }
+      } catch (error) {
+        console.error('Error requesting device orientation permission:', error);
+        setPermissionState('denied');
+        setIsRequesting(false);
+        return false;
+      }
+    } else {
+      // Permission not required
+      setPermissionState('granted');
+      return true;
+    }
+  };
 
   const validate = (): boolean => {
     const newErrors: ValidationErrors = {};
 
     if (categoryMode === 'select' && selectedCategories.length === 0) {
-      newErrors.categories = 'Please select at least one category or choose Random/Mixed';
+      newErrors.categories = 'Please select at least one category or choose Random';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleContinue = () => {
-    if (validate()) {
-      let categorySelection: HeadbandsCategorySelection;
-      
-      if (categoryMode === 'random') {
-        categorySelection = 'random';
-      } else if (categoryMode === 'mixed') {
-        categorySelection = 'mixed';
-      } else {
-        categorySelection = selectedCategories;
-      }
+  const handleContinue = async () => {
+    if (!validate()) return;
 
-      onContinue({
-        selectedCategories: categorySelection,
-        guessTimeSeconds,
-      });
+    // Request permission first if needed
+    if (permissionState === 'prompt' || permissionState === 'unknown') {
+      const granted = await requestPermission();
+      if (!granted) {
+        return; // Don't continue if permission denied
+      }
     }
+
+    // Permission granted or not needed, continue with game
+    let categorySelection: HeadbandsCategorySelection;
+    
+    if (categoryMode === 'random') {
+      categorySelection = 'random';
+    } else {
+      categorySelection = selectedCategories;
+    }
+
+    onContinue({
+      selectedCategories: categorySelection,
+      guessTimeSeconds,
+    });
   };
 
   const toggleCategory = (category: Category) => {
@@ -73,11 +138,9 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
   const categoryDisplayText = 
     categoryMode === 'random' 
       ? 'Random Category'
-      : categoryMode === 'mixed'
-      ? 'All Categories Mixed'
       : selectedCategories.length === CATEGORIES.length
       ? 'All Categories'
-      : `${selectedCategories.length} categories`;
+      : `${selectedCategories.length} categor${selectedCategories.length === 1 ? 'y' : 'ies'}`;
 
   return (
     <div className="min-h-screen p-6 py-12">
@@ -95,11 +158,10 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
               </label>
               
               {/* Mode selection buttons */}
-              <div className="grid grid-cols-3 gap-2 mb-4">
+              <div className="grid grid-cols-2 gap-2 mb-4">
                 <button
                   onClick={() => {
                     setCategoryMode('select');
-                    setSelectedCategories([]);
                   }}
                   className={`px-4 py-2 rounded-lg border transition-all ${
                     categoryMode === 'select'
@@ -107,7 +169,7 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
                       : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600'
                   }`}
                 >
-                  Select
+                  Select Category
                 </button>
                 <button
                   onClick={() => {
@@ -121,19 +183,6 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
                   }`}
                 >
                   Random
-                </button>
-                <button
-                  onClick={() => {
-                    setCategoryMode('mixed');
-                    setSelectedCategories([]);
-                  }}
-                  className={`px-4 py-2 rounded-lg border transition-all ${
-                    categoryMode === 'mixed'
-                      ? 'bg-green-500/20 border-green-500 text-white'
-                      : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600'
-                  }`}
-                >
-                  Mixed
                 </button>
               </div>
 
@@ -180,7 +229,7 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
               )}
 
               {/* Display selected mode */}
-              {categoryMode !== 'select' && (
+              {categoryMode === 'random' && (
                 <div className="px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 text-white text-center">
                   <span className="font-medium">{categoryDisplayText}</span>
                 </div>
@@ -191,15 +240,54 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
               )}
             </div>
 
-            <NumberStepper
-              label="Guess Time (seconds)"
-              value={guessTimeSeconds}
-              onChange={setGuessTimeSeconds}
-              min={10}
-              max={300}
-            />
+            <div>
+              <label className="block text-gray-300 font-medium mb-2">
+                Guess Time: {guessTimeSeconds} seconds
+              </label>
+              <input
+                type="range"
+                min="10"
+                max="90"
+                value={guessTimeSeconds}
+                onChange={(e) => setGuessTimeSeconds(parseInt(e.target.value, 10))}
+                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500"
+                style={{
+                  background: `linear-gradient(to right, rgb(34, 197, 94) 0%, rgb(34, 197, 94) ${((guessTimeSeconds - 10) / (90 - 10)) * 100}%, rgb(55, 65, 81) ${((guessTimeSeconds - 10) / (90 - 10)) * 100}%, rgb(55, 65, 81) 100%)`
+                }}
+              />
+              <div className="flex justify-between text-xs text-gray-400 mt-1">
+                <span>10s</span>
+                <span>90s</span>
+              </div>
+            </div>
           </div>
         </Card>
+
+        {permissionState === 'denied' && (
+          <Card className="bg-red-500/20 border border-red-500/50">
+            <div className="text-center space-y-2">
+              <p className="text-red-400 font-medium">
+                Motion & Orientation access denied
+              </p>
+              <p className="text-red-300 text-xs">
+                Please enable motion & orientation in your browser settings to use tilt detection.
+              </p>
+            </div>
+          </Card>
+        )}
+
+        {permissionState === 'unsupported' && (
+          <Card className="bg-yellow-500/20 border border-yellow-500/50">
+            <div className="text-center space-y-2">
+              <p className="text-yellow-400 font-medium">
+                Tilt detection not available
+              </p>
+              <p className="text-yellow-300 text-xs">
+                Your device or browser doesn't support tilt detection. The game will use button controls instead.
+              </p>
+            </div>
+          </Card>
+        )}
 
         <div className="flex gap-4">
           <Button onClick={onBack} variant="secondary" className="flex-1">
@@ -209,9 +297,13 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
             onClick={handleContinue} 
             variant="primary" 
             className="flex-1"
-            disabled={categoryMode === 'select' && selectedCategories.length === 0}
+            disabled={
+              (categoryMode === 'select' && selectedCategories.length === 0) ||
+              isRequesting ||
+              permissionState === 'denied'
+            }
           >
-            Start Game
+            {isRequesting ? 'Requesting Permission...' : 'Start Game'}
           </Button>
         </div>
       </div>

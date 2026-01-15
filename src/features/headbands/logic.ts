@@ -10,9 +10,6 @@ export function getCategoriesToUse(selection: HeadbandsCategorySelection): Categ
     // Pick one random category
     const randomIndex = Math.floor(Math.random() * CATEGORIES.length);
     return [CATEGORIES[randomIndex]];
-  } else if (selection === 'mixed') {
-    // Return all categories mixed together
-    return CATEGORIES;
   } else {
     // Return selected categories
     return selection;
