@@ -130,7 +130,8 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
     }
   }, [handleAnswer]);
 
-  const { isLandscape, permissionGranted } = useLandscapeTilt({
+  // Enable tilt detection in landscape mode
+  useLandscapeTilt({
     onTilt: handleTilt,
     enabled: phase === 'playing',
     tiltThreshold: 25,
