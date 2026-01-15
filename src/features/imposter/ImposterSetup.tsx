@@ -78,8 +78,8 @@ export function ImposterSetup({
     : `${selectedCategories.length} categories`;
 
   return (
-    <div className="min-h-screen p-6 py-12">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="h-screen w-screen flex flex-col overflow-y-auto">
+      <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full p-4 py-6 space-y-6">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">Imposter Setup</h1>
           <p className="text-gray-400">Configure your game settings</p>
@@ -165,7 +165,7 @@ export function ImposterSetup({
           </div>
         </Card>
 
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-shrink-0">
           <Button onClick={onBack} variant="secondary" className="flex-1">
             Back
           </Button>
