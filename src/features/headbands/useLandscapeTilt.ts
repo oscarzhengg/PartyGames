@@ -192,8 +192,10 @@ export function useLandscapeTilt({
     };
 
     // Try to detect if permission was already granted by attempting to listen
+    let permissionAlreadyGranted = false;
     testHandler = (event: DeviceOrientationEvent) => {
       if (event.gamma !== null && event.gamma !== undefined && mounted) {
+        permissionAlreadyGranted = true;
         setPermissionGranted(true);
         if (testHandler) {
           window.removeEventListener('deviceorientation', testHandler);
@@ -205,8 +207,14 @@ export function useLandscapeTilt({
     // Add test handler first to check if permission is already granted
     window.addEventListener('deviceorientation', testHandler);
 
-    // Request permission if needed (will also add handler if not already granted)
-    requestPermission();
+    // Give it a moment to detect if permission was already granted
+    // If permission was already granted in setup, events will fire immediately
+    setTimeout(() => {
+      if (!permissionAlreadyGranted && mounted) {
+        // Permission not already granted, request it
+        requestPermission();
+      }
+    }, 500);
 
     return () => {
       mounted = false;
