@@ -19,6 +19,7 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
   const [timeRemaining, setTimeRemaining] = useState(settings.guessTimeSeconds);
   const [correctGuessed, setCorrectGuessed] = useState(0);
   const [totalGuessed, setTotalGuessed] = useState(0);
+  const [wordColor, setWordColor] = useState<'white' | 'green' | 'red'>('white');
 
   // Countdown effect
   useEffect(() => {
@@ -68,14 +69,22 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
     if (phase !== 'playing') return;
 
     if (side === 'left') {
-      // Left tap = correct
+      // Left tap = correct - show green, then move to next word
+      setWordColor('green');
       setCorrectGuessed((prev) => prev + 1);
       setTotalGuessed((prev) => prev + 1);
-      handleNextWord();
+      setTimeout(() => {
+        handleNextWord();
+        setWordColor('white');
+      }, 500);
     } else {
-      // Right tap = wrong/pass
+      // Right tap = wrong/pass - show red, then move to next word
+      setWordColor('red');
       setTotalGuessed((prev) => prev + 1);
-      handleNextWord();
+      setTimeout(() => {
+        handleNextWord();
+        setWordColor('white');
+      }, 500);
     }
   };
 
@@ -88,6 +97,7 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
     setTimeRemaining(settings.guessTimeSeconds);
     setCorrectGuessed(0);
     setTotalGuessed(0);
+    setWordColor('white');
   };
 
   const currentWord = words[currentWordIndex] || '';
@@ -159,8 +169,19 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
     );
   }
 
+  const getWordColorClass = () => {
+    switch (wordColor) {
+      case 'green':
+        return 'text-green-400';
+      case 'red':
+        return 'text-red-400';
+      default:
+        return 'text-white';
+    }
+  };
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col relative">
       {/* Timer at top */}
       <div className="text-center pt-6">
         <div className="text-4xl font-bold text-white mb-1">
@@ -168,27 +189,24 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
         </div>
       </div>
 
-      {/* Split screen - left and right halves (no visual indication) */}
-      <div className="flex-1 flex">
+      {/* Split screen - left and right halves (invisible, for tap detection) */}
+      <div className="flex-1 flex relative">
         {/* Left half - tap for correct */}
         <div
-          className="flex-1 flex items-center justify-center cursor-pointer active:bg-green-500/10 transition-colors"
+          className="flex-1 cursor-pointer"
           onClick={() => handleTap('left')}
-        >
-          <div className="text-center px-6">
-            <h2 className="text-7xl md:text-8xl font-bold text-white break-words">
-              {currentWord}
-            </h2>
-          </div>
-        </div>
+        />
 
         {/* Right half - tap for wrong/pass */}
         <div
-          className="flex-1 flex items-center justify-center cursor-pointer active:bg-red-500/10 transition-colors"
+          className="flex-1 cursor-pointer"
           onClick={() => handleTap('right')}
-        >
+        />
+
+        {/* Centered word overlay */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center px-6">
-            <h2 className="text-7xl md:text-8xl font-bold text-white break-words">
+            <h2 className={`text-7xl md:text-8xl font-bold break-words transition-colors duration-200 ${getWordColorClass()}`}>
               {currentWord}
             </h2>
           </div>
