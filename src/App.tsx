@@ -1,26 +1,29 @@
 import { useState } from 'react';
 import { Home } from './features/home/Home';
-import { HowToPlay } from './features/home/HowToPlay';
 import { ModeSelection } from './features/ModeSelection';
 import { ImposterSetup } from './features/imposter/ImposterSetup';
 import { CategorySelection } from './features/imposter/CategorySelection';
 import { ImposterPlayerGrid } from './features/imposter/ImposterPlayerGrid';
 import { AllReady } from './features/imposter/AllReady';
 import { HeadbandsPlaceholder } from './features/headbands/HeadbandsPlaceholder';
+import { HeadbandsSetup } from './features/headbands/HeadbandsSetup';
+import { HeadbandsGame } from './features/headbands/HeadbandsGame';
 import { PageTransition } from './components/PageTransition';
 import type { ImposterSettings, RoleAssignment } from './features/imposter/types';
+import type { HeadbandsSettings } from './features/headbands/types';
 import { CATEGORIES, type Category } from './features/imposter/wordBanks';
 import { assignRoles } from './features/imposter/logic';
 
 type Screen = 
   | 'home'
-  | 'howToPlay'
   | 'modeSelection'
   | 'imposterSetup'
   | 'categorySelection'
   | 'imposterPlayerGrid'
   | 'allReady'
-  | 'headbandsPlaceholder';
+  | 'headbandsPlaceholder'
+  | 'headbandsSetup'
+  | 'headbandsGame';
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
@@ -28,6 +31,7 @@ function App() {
   const [selectedCategories, setSelectedCategories] = useState<Category[]>(CATEGORIES);
   const [imposterSettings, setImposterSettings] = useState<ImposterSettings | null>(null);
   const [roleAssignment, setRoleAssignment] = useState<RoleAssignment | null>(null);
+  const [headbandsSettings, setHeadbandsSettings] = useState<HeadbandsSettings | null>(null);
 
   const navigateTo = (screen: Screen) => {
     setPreviousScreen(currentScreen);
@@ -38,21 +42,18 @@ function App() {
     navigateTo('modeSelection');
   };
 
-  const handleHowToPlay = () => {
-    navigateTo('howToPlay');
-  };
-
   const handleBackToHome = () => {
     navigateTo('home');
     setImposterSettings(null);
     setRoleAssignment(null);
+    setHeadbandsSettings(null);
   };
 
   const handleModeSelection = (mode: 'imposter' | 'headbands') => {
     if (mode === 'imposter') {
       navigateTo('imposterSetup');
     } else {
-      navigateTo('headbandsPlaceholder');
+      navigateTo('headbandsSetup');
     }
   };
 
@@ -84,6 +85,15 @@ function App() {
     }
   };
 
+  const handleHeadbandsSetupContinue = (settings: HeadbandsSettings) => {
+    setHeadbandsSettings(settings);
+    navigateTo('headbandsGame');
+  };
+
+  const handleHeadbandsGameBack = () => {
+    navigateTo('headbandsSetup');
+  };
+
   const getTransitionDirection = (screen: Screen): 'forward' | 'backward' | 'modal' | 'fade' => {
     if (!previousScreen) return 'fade';
     
@@ -101,12 +111,13 @@ function App() {
     // Determine forward/backward based on screen hierarchy
     const screenOrder: Screen[] = [
       'home',
-      'howToPlay',
       'modeSelection',
       'imposterSetup',
       'imposterPlayerGrid',
       'allReady',
       'headbandsPlaceholder',
+      'headbandsSetup',
+      'headbandsGame',
     ];
     
     const currentIndex = screenOrder.indexOf(screen);
@@ -121,13 +132,7 @@ function App() {
     <div className="min-h-screen bg-gradient-to-b from-[#0a0e27] to-black relative overflow-hidden">
       <PageTransition isActive={currentScreen === 'home'} direction="fade">
         {currentScreen === 'home' && (
-          <Home onGetStarted={handleGetStarted} onHowToPlay={handleHowToPlay} />
-        )}
-      </PageTransition>
-      
-      <PageTransition isActive={currentScreen === 'howToPlay'} direction={getTransitionDirection('howToPlay')}>
-        {currentScreen === 'howToPlay' && (
-          <HowToPlay onBack={handleBackToHome} />
+          <Home onGetStarted={handleGetStarted} />
         )}
       </PageTransition>
       
@@ -186,6 +191,24 @@ function App() {
       <PageTransition isActive={currentScreen === 'headbandsPlaceholder'} direction={getTransitionDirection('headbandsPlaceholder')}>
         {currentScreen === 'headbandsPlaceholder' && (
           <HeadbandsPlaceholder onBack={() => navigateTo('modeSelection')} />
+        )}
+      </PageTransition>
+
+      <PageTransition isActive={currentScreen === 'headbandsSetup'} direction={getTransitionDirection('headbandsSetup')}>
+        {currentScreen === 'headbandsSetup' && (
+          <HeadbandsSetup
+            onContinue={handleHeadbandsSetupContinue}
+            onBack={() => navigateTo('modeSelection')}
+          />
+        )}
+      </PageTransition>
+
+      <PageTransition isActive={currentScreen === 'headbandsGame'} direction="fade">
+        {currentScreen === 'headbandsGame' && headbandsSettings && (
+          <HeadbandsGame
+            settings={headbandsSettings}
+            onBack={handleHeadbandsGameBack}
+          />
         )}
       </PageTransition>
     </div>

@@ -2,10 +2,9 @@ import { Button } from '../../components/Button';
 
 interface HomeProps {
   onGetStarted: () => void;
-  onHowToPlay: () => void;
 }
 
-export function Home({ onGetStarted, onHowToPlay }: HomeProps) {
+export function Home({ onGetStarted }: HomeProps) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6">
       <div className="max-w-md w-full space-y-8">
@@ -39,9 +38,6 @@ export function Home({ onGetStarted, onHowToPlay }: HomeProps) {
         <div className="space-y-4">
           <Button onClick={onGetStarted} fullWidth variant="primary">
             Get Started
-          </Button>
-          <Button onClick={onHowToPlay} fullWidth variant="secondary">
-            How to Play
           </Button>
         </div>
       </div>
