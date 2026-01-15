@@ -117,9 +117,6 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
     }
   }, [phase, handleNextWord]);
 
-  const handleTap = (side: 'left' | 'right') => {
-    handleAnswer(side === 'left');
-  };
 
   // Tilt detection for landscape mode
   const handleTilt = useCallback((action: TiltAction) => {
@@ -238,35 +235,12 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
         </div>
       </div>
 
-      {/* Split screen - left and right halves (invisible, for tap detection) */}
-      <div className="flex-1 flex relative">
-        {/* Left half - tap for correct */}
-        <div
-          className="flex-1 cursor-pointer touch-none"
-          onClick={() => handleTap('left')}
-          onTouchStart={(e) => {
-            e.preventDefault();
-            handleTap('left');
-          }}
-        />
-
-        {/* Right half - tap for wrong/pass */}
-        <div
-          className="flex-1 cursor-pointer touch-none"
-          onClick={() => handleTap('right')}
-          onTouchStart={(e) => {
-            e.preventDefault();
-            handleTap('right');
-          }}
-        />
-
-        {/* Centered word overlay */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="text-center px-6">
-            <h2 className={`text-7xl md:text-8xl font-bold break-words transition-colors duration-200 ${getWordColorClass()}`}>
-              {currentWord}
-            </h2>
-          </div>
+      {/* Centered word display */}
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center px-6">
+          <h2 className={`text-7xl md:text-8xl font-bold break-words transition-colors duration-200 ${getWordColorClass()}`}>
+            {currentWord}
+          </h2>
         </div>
       </div>
     </div>

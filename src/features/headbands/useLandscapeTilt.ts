@@ -69,6 +69,11 @@ export function useLandscapeTilt({
       window.addEventListener('resize', checkOrientation);
     }
 
+    // Debug log
+    if (import.meta.env.DEV) {
+      console.log('Orientation detection initialized');
+    }
+
     return () => {
       if (window.orientation !== undefined) {
         window.removeEventListener('orientationchange', checkOrientation);
@@ -82,12 +87,20 @@ export function useLandscapeTilt({
 
   const handleOrientation = useCallback(
     (event: DeviceOrientationEvent) => {
-      if (!enabled || !permissionGranted || !orientation.isLandscape) return;
+      if (!enabled || !permissionGranted || !orientation.isLandscape) {
+        return;
+      }
 
       const gamma = event.gamma ?? null; // Left-to-right tilt (-90 to 90)
+      const beta = event.beta ?? null; // Front-to-back tilt (-180 to 180)
       
       // Skip if values are null
       if (gamma === null) return;
+
+      // Debug log in development
+      if (import.meta.env.DEV) {
+        console.log('Tilt:', { gamma: gamma.toFixed(1), beta: beta?.toFixed(1), landscape: orientation.isLandscape, permission: permissionGranted });
+      }
 
       let action: TiltAction = null;
 
@@ -133,14 +146,22 @@ export function useLandscapeTilt({
 
   // Request permission and set up event listener
   useEffect(() => {
-    if (!enabled || !orientation.isLandscape) return;
+    if (!enabled || !orientation.isLandscape) {
+      // If not enabled or not landscape, ensure permission is reset
+      setPermissionGranted(false);
+      return;
+    }
 
     const isSecureContext = window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost';
     const hasOrientationEvent = typeof DeviceOrientationEvent !== 'undefined';
 
     if (!isSecureContext || !hasOrientationEvent) {
+      console.warn('Device orientation not supported or not secure context');
       return;
     }
+
+    let mounted = true;
+    let testHandler: ((event: DeviceOrientationEvent) => void) | null = null;
 
     const requestPermission = async () => {
       // Check if permission is needed (iOS 13+)
@@ -150,34 +171,48 @@ export function useLandscapeTilt({
       ) {
         try {
           const response = await (DeviceOrientationEvent as any).requestPermission();
-          if (response === 'granted') {
+          if (mounted && response === 'granted') {
             setPermissionGranted(true);
+            // Remove test handler and add real handler
+            if (testHandler) {
+              window.removeEventListener('deviceorientation', testHandler);
+            }
+            window.addEventListener('deviceorientation', handleOrientation);
           }
         } catch (error) {
           console.error('Error requesting device orientation permission:', error);
         }
       } else {
         // Permission not required, grant it
-        setPermissionGranted(true);
+        if (mounted) {
+          setPermissionGranted(true);
+          window.addEventListener('deviceorientation', handleOrientation);
+        }
       }
     };
 
     // Try to detect if permission was already granted by attempting to listen
-    const testHandler = (event: DeviceOrientationEvent) => {
-      if (event.gamma !== null) {
+    testHandler = (event: DeviceOrientationEvent) => {
+      if (event.gamma !== null && event.gamma !== undefined && mounted) {
         setPermissionGranted(true);
-        window.removeEventListener('deviceorientation', testHandler);
+        if (testHandler) {
+          window.removeEventListener('deviceorientation', testHandler);
+        }
+        window.addEventListener('deviceorientation', handleOrientation);
       }
     };
 
+    // Add test handler first to check if permission is already granted
     window.addEventListener('deviceorientation', testHandler);
-    window.addEventListener('deviceorientation', handleOrientation);
 
-    // Request permission if needed
+    // Request permission if needed (will also add handler if not already granted)
     requestPermission();
 
     return () => {
-      window.removeEventListener('deviceorientation', testHandler);
+      mounted = false;
+      if (testHandler) {
+        window.removeEventListener('deviceorientation', testHandler);
+      }
       window.removeEventListener('deviceorientation', handleOrientation);
       if (actionTimeoutRef.current) {
         clearTimeout(actionTimeoutRef.current);
