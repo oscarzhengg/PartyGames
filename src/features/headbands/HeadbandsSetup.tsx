@@ -5,6 +5,68 @@ import { CategorySquare } from '../../components/CategorySquare';
 import type { HeadbandsSettings, HeadbandsCategorySelection } from './types';
 import { CATEGORIES, type Category } from '../imposter/wordBanks';
 
+// Icon components for categories
+const CategoryIcons: Record<Category, React.ReactNode> = {
+  'Food': (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+  ),
+  'Animals': (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+    </svg>
+  ),
+  'Objects': (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+    </svg>
+  ),
+  'Movies': (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+    </svg>
+  ),
+  'Songs': (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+    </svg>
+  ),
+  'Locations': (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  ),
+  'Sports': (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+  'Brands': (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+    </svg>
+  ),
+  'Celebrities': (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+  ),
+};
+
+const RandomIcon = (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+  </svg>
+);
+
+const ClockIcon = (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
 interface HeadbandsSetupProps {
   onContinue: (settings: HeadbandsSettings) => void;
   onBack: () => void;
@@ -117,20 +179,15 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
   };
 
   return (
-    <div className="h-screen-safe w-screen flex flex-col safe-area-inset">
+    <div className="h-screen-safe w-screen flex flex-col safe-area-inset overflow-hidden">
       {/* Fixed top banner */}
       <div className="flex-shrink-0 text-center pt-6 pb-4 px-4">
-        <h1 className="text-4xl font-bold text-white mb-2">Headbands Setup</h1>
-        <p className="text-gray-400">Configure your game settings</p>
+        <h1 className="text-4xl font-bold text-white">Headbands Category</h1>
       </div>
 
       {/* Scrollable categories container */}
       <div className="flex-1 min-h-0 px-4 py-2">
         <Card className="h-full flex flex-col overflow-hidden !p-4">
-          <label className="block text-gray-300 font-medium mb-3 flex-shrink-0">
-            Categories
-          </label>
-          
           {/* Scrollable category container */}
           {/* Portrait: 2 columns vertical scroll, Landscape: 1 row horizontal scroll */}
           <div className="flex-1 min-h-0 overflow-hidden">
@@ -144,6 +201,7 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
                       label="Random"
                       isSelected={isRandomSelected}
                       onClick={handleRandomClick}
+                      icon={RandomIcon}
                     />
                   </div>
                   {/* Rest of categories alphabetically */}
@@ -153,6 +211,7 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
                         label={category}
                         isSelected={selectedCategories.includes(category)}
                         onClick={() => toggleCategory(category)}
+                        icon={CategoryIcons[category]}
                       />
                     </div>
                   ))}
@@ -167,6 +226,7 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
                     label="Random"
                     isSelected={isRandomSelected}
                     onClick={handleRandomClick}
+                    icon={RandomIcon}
                   />
                   {/* Rest of categories alphabetically */}
                   {sortedCategories.map((category) => (
@@ -175,21 +235,13 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
                       label={category}
                       isSelected={selectedCategories.includes(category)}
                       onClick={() => toggleCategory(category)}
+                      icon={CategoryIcons[category]}
                     />
                   ))}
                 </div>
               </div>
             )}
           </div>
-
-          {/* Selected category display */}
-          {(isRandomSelected || selectedCategories.length > 0) && (
-            <div className="mt-3 flex-shrink-0">
-              <p className="text-gray-300 font-medium text-sm">
-                Selected: {isRandomSelected ? 'Random' : selectedCategories[0]}
-              </p>
-            </div>
-          )}
 
           {errors.categories && (
             <p className="text-red-400 text-sm mt-2 flex-shrink-0">{errors.categories}</p>
@@ -200,19 +252,20 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
       {/* Fixed bottom section */}
       <div className="flex-shrink-0 px-4 pb-4 space-y-4">
         <div>
-          <label className="block text-gray-300 font-medium mb-3">
-            Guess Time
+          <label className="flex items-center gap-2 text-gray-300 font-medium mb-3">
+            <span>{ClockIcon}</span>
+            <span>Guessing Time</span>
           </label>
           
           {/* Quick Select Presets */}
-          <div className="flex gap-3 mb-4">
+          <div className="flex gap-2 mb-4">
             {[30, 60, 90].map((preset) => (
               <button
                 key={preset}
                 type="button"
                 onClick={() => handlePresetClick(preset)}
                 className={`
-                  flex-1 py-4 px-4 rounded-xl font-bold text-lg transition-all duration-200
+                  flex-1 py-3 px-3 rounded-xl font-bold text-base transition-all duration-200
                   border-4
                   ${guessTimeSeconds === preset
                     ? 'bg-gradient-to-br from-green-900 to-emerald-500 text-white border-emerald-400 shadow-lg shadow-green-500/30 scale-105'
