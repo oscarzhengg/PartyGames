@@ -15,16 +15,18 @@ interface ValidationErrors {
 }
 
 export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
-  const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
-  const [categoryMode, setCategoryMode] = useState<'select' | 'random'>('select');
+  const [selectedCategory, setSelectedCategory] = useState<Category | 'random' | null>(null);
   const [guessTimeSeconds, setGuessTimeSeconds] = useState(30);
   const [errors, setErrors] = useState<ValidationErrors>({});
+
+  // Sort categories alphabetically
+  const sortedCategories = [...CATEGORIES].sort();
 
   const validate = (): boolean => {
     const newErrors: ValidationErrors = {};
 
-    if (categoryMode === 'select' && selectedCategories.length === 0) {
-      newErrors.categories = 'Please select at least one category or choose Random';
+    if (!selectedCategory) {
+      newErrors.categories = 'Please select a category or choose Random';
     }
 
     setErrors(newErrors);
@@ -36,10 +38,12 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
 
     let categorySelection: HeadbandsCategorySelection;
     
-    if (categoryMode === 'random') {
+    if (selectedCategory === 'random') {
       categorySelection = 'random';
+    } else if (selectedCategory) {
+      categorySelection = [selectedCategory];
     } else {
-      categorySelection = selectedCategories;
+      return; // Should not happen due to validation
     }
 
     onContinue({
@@ -48,128 +52,109 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
     });
   };
 
-  const toggleCategory = (category: Category) => {
-    // Only allow one category to be selected at a time
-    if (selectedCategories.includes(category)) {
-      // If clicking the same category, deselect it
-      setSelectedCategories([]);
+  const handleCategorySelect = (category: Category | 'random') => {
+    // Toggle selection - if clicking the same category, deselect it
+    if (selectedCategory === category) {
+      setSelectedCategory(null);
     } else {
-      // Otherwise, select only this category
-      setSelectedCategories([category]);
+      setSelectedCategory(category);
     }
   };
 
-  const categoryDisplayText = 
-    categoryMode === 'random' 
-      ? 'Random Category'
-      : selectedCategories.length > 0
-      ? selectedCategories[0]
-      : 'No category selected';
-
   return (
-    <div className="h-screen-safe w-screen flex flex-col overflow-y-auto safe-area-inset">
-      <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full p-4 py-6 space-y-6">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Headbands Setup</h1>
-          <p className="text-gray-400">Configure your game settings</p>
-        </div>
+    <div className="h-screen-safe w-screen flex flex-col safe-area-inset">
+      {/* Fixed Top Banner */}
+      <div className="flex-shrink-0 text-center py-4 px-4">
+        <h1 className="text-4xl font-bold text-white mb-2">Headbands Setup</h1>
+        <p className="text-gray-400">Configure your game settings</p>
+      </div>
 
-        <Card>
-          <div className="space-y-6">
-            <div>
-              <label className="block text-gray-300 font-medium mb-2">
-                Categories
-              </label>
-              
-              {/* Mode selection buttons */}
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                <button
-                  onClick={() => {
-                    setCategoryMode('select');
-                  }}
-                  className={`px-4 py-2 rounded-lg border transition-all ${
-                    categoryMode === 'select'
-                      ? 'bg-green-500/20 border-green-500 text-white'
-                      : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600'
-                  }`}
-                >
-                  Select Category
-                </button>
-                <button
-                  onClick={() => {
-                    setCategoryMode('random');
-                    setSelectedCategories([]);
-                  }}
-                  className={`px-4 py-2 rounded-lg border transition-all ${
-                    categoryMode === 'random'
-                      ? 'bg-green-500/20 border-green-500 text-white'
-                      : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600'
-                  }`}
-                >
-                  Random
-                </button>
-              </div>
-
-              {/* Category grid (only show when in select mode) */}
-              {categoryMode === 'select' && (
-                <>
-                  {selectedCategories.length > 0 && (
-                    <div className="mb-3">
-                      <p className="text-gray-300 font-medium text-sm">
-                        Selected: {selectedCategories[0]}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-                    {CATEGORIES.map((category) => (
-                      <CategorySquare
-                        key={category}
-                        label={category}
-                        isSelected={selectedCategories.includes(category)}
-                        onClick={() => toggleCategory(category)}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-
-              {/* Display selected mode */}
-              {categoryMode === 'random' && (
-                <div className="px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 text-white text-center">
-                  <span className="font-medium">{categoryDisplayText}</span>
+      {/* Scrollable Categories Container */}
+      <div className="flex-1 min-h-0 px-4">
+        <Card className="h-full flex flex-col">
+          <label className="block text-gray-300 font-medium mb-3 flex-shrink-0">
+            Categories
+          </label>
+          
+          {/* Scrollable category container */}
+          {/* Portrait: 1 row horizontal scroll, Landscape: 2 columns vertical scroll */}
+          <div className="flex-1 min-h-0 overflow-hidden">
+            {/* Portrait: horizontal scroll */}
+            <div className="h-full overflow-x-auto overflow-y-hidden landscape:hidden">
+              <div className="flex gap-2 pb-2 h-full items-stretch" style={{ width: 'max-content' }}>
+                {/* Random option first */}
+                <div className="w-24 h-24 flex-shrink-0">
+                  <CategorySquare
+                    label="Random"
+                    isSelected={selectedCategory === 'random'}
+                    onClick={() => handleCategorySelect('random')}
+                  />
                 </div>
-              )}
-
-              {errors.categories && (
-                <p className="text-red-400 text-sm mt-2">{errors.categories}</p>
-              )}
+                {/* Then categories alphabetically */}
+                {sortedCategories.map((category) => (
+                  <div key={category} className="w-24 h-24 flex-shrink-0">
+                    <CategorySquare
+                      label={category}
+                      isSelected={selectedCategory === category}
+                      onClick={() => handleCategorySelect(category)}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div>
-              <label className="block text-gray-300 font-medium mb-2">
-                Guess Time: {guessTimeSeconds} seconds
-              </label>
-              <input
-                type="range"
-                min="10"
-                max="90"
-                value={guessTimeSeconds}
-                onChange={(e) => setGuessTimeSeconds(parseInt(e.target.value, 10))}
-                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500"
-                style={{
-                  background: `linear-gradient(to right, rgb(34, 197, 94) 0%, rgb(34, 197, 94) ${((guessTimeSeconds - 10) / (90 - 10)) * 100}%, rgb(55, 65, 81) ${((guessTimeSeconds - 10) / (90 - 10)) * 100}%, rgb(55, 65, 81) 100%)`
-                }}
-              />
-              <div className="flex justify-between text-xs text-gray-400 mt-1">
-                <span>10s</span>
-                <span>90s</span>
+            {/* Landscape: vertical scroll with 2 columns */}
+            <div className="hidden landscape:block h-full overflow-y-auto overflow-x-hidden">
+              <div className="grid grid-cols-2 gap-2 pr-2">
+                {/* Random option first */}
+                <CategorySquare
+                  label="Random"
+                  isSelected={selectedCategory === 'random'}
+                  onClick={() => handleCategorySelect('random')}
+                />
+                {/* Then categories alphabetically */}
+                {sortedCategories.map((category) => (
+                  <CategorySquare
+                    key={category}
+                    label={category}
+                    isSelected={selectedCategory === category}
+                    onClick={() => handleCategorySelect(category)}
+                  />
+                ))}
               </div>
             </div>
           </div>
-        </Card>
 
-        <div className="flex gap-4 flex-shrink-0">
+          {errors.categories && (
+            <p className="text-red-400 text-sm mt-2 flex-shrink-0">{errors.categories}</p>
+          )}
+        </Card>
+      </div>
+
+      {/* Fixed Bottom Section */}
+      <div className="flex-shrink-0 px-4 pb-4 space-y-4">
+        <div>
+          <label className="block text-gray-300 font-medium mb-2">
+            Guess Time: {guessTimeSeconds} seconds
+          </label>
+          <input
+            type="range"
+            min="10"
+            max="90"
+            value={guessTimeSeconds}
+            onChange={(e) => setGuessTimeSeconds(parseInt(e.target.value, 10))}
+            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500"
+            style={{
+              background: `linear-gradient(to right, rgb(34, 197, 94) 0%, rgb(34, 197, 94) ${((guessTimeSeconds - 10) / (90 - 10)) * 100}%, rgb(55, 65, 81) ${((guessTimeSeconds - 10) / (90 - 10)) * 100}%, rgb(55, 65, 81) 100%)`
+            }}
+          />
+          <div className="flex justify-between text-xs text-gray-400 mt-1">
+            <span>10s</span>
+            <span>90s</span>
+          </div>
+        </div>
+
+        <div className="flex gap-4">
           <Button onClick={onBack} variant="secondary" className="flex-1">
             Back
           </Button>
@@ -177,7 +162,7 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
             onClick={handleContinue} 
             variant="primary" 
             className="flex-1"
-            disabled={categoryMode === 'select' && selectedCategories.length === 0}
+            disabled={!selectedCategory}
           >
             Start Game
           </Button>
