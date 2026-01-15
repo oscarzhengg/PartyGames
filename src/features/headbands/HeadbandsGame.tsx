@@ -22,6 +22,41 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
   const [wordsGuessed, setWordsGuessed] = useState(0); // Track how many words were correctly guessed/passed
   const [permissionGranted, setPermissionGranted] = useState(false);
 
+  const handleNextWord = useCallback(() => {
+    setCurrentWordIndex((prev) => {
+      if (prev >= words.length - 1) {
+        // All words used, restart from beginning
+        return 0;
+      }
+      return prev + 1;
+    });
+  }, [words.length]);
+
+  const handleTilt = useCallback(
+    (action: TiltAction) => {
+      if (!tiltEnabled || phase !== 'playing') return;
+
+      if (action === 'correct' || action === 'pass') {
+        // Move to next word on correct or pass
+        setWordsGuessed((prev) => prev + 1);
+        setTimeout(() => {
+          handleNextWord();
+        }, 500);
+      }
+      // For 'wrong', just continue with current word
+    },
+    [tiltEnabled, phase, handleNextWord]
+  );
+
+  // Get permission state from tilt detection hook (must be called before useEffects that use it)
+  const {
+    permissionState,
+  } = useTiltDetection({
+    onTilt: handleTilt,
+    enabled: tiltEnabled && phase === 'playing',
+    tiltThreshold: 25,
+  });
+
   // Check permission state - start countdown once we know the permission status
   useEffect(() => {
     // If permission is not 'unknown' or 'prompt', we can proceed (either granted, denied, or unsupported)
@@ -67,41 +102,6 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
 
     return () => clearTimeout(timer);
   }, [phase, timeRemaining]);
-
-  const handleNextWord = useCallback(() => {
-    setCurrentWordIndex((prev) => {
-      if (prev >= words.length - 1) {
-        // All words used, restart from beginning
-        return 0;
-      }
-      return prev + 1;
-    });
-  }, [words.length]);
-
-
-  const handleTilt = useCallback(
-    (action: TiltAction) => {
-      if (!tiltEnabled || phase !== 'playing') return;
-
-      if (action === 'correct' || action === 'pass') {
-        // Move to next word on correct or pass
-        setWordsGuessed((prev) => prev + 1);
-        setTimeout(() => {
-          handleNextWord();
-        }, 500);
-      }
-      // For 'wrong', just continue with current word
-    },
-    [tiltEnabled, phase, handleNextWord]
-  );
-
-  const {
-    permissionState,
-  } = useTiltDetection({
-    onTilt: handleTilt,
-    enabled: tiltEnabled && phase === 'playing',
-    tiltThreshold: 25,
-  });
 
   const handleRestart = () => {
     setPhase('countdown');
