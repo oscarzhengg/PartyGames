@@ -120,7 +120,36 @@ export function useTiltDetection({
       typeof (DeviceOrientationEvent as any).requestPermission === 'function'
     ) {
       // iOS 13+ requires permission
-      setPermissionState('prompt');
+      // Try to detect if permission was already granted by attempting to listen to the event
+      let permissionDetected = false;
+      const testHandler = (event: DeviceOrientationEvent) => {
+        // If this fires, permission is already granted
+        if (!permissionDetected && event.beta !== null && event.gamma !== null) {
+          permissionDetected = true;
+          setPermissionState('granted');
+          window.removeEventListener('deviceorientation', testHandler);
+        }
+      };
+      
+      try {
+        // Try to add a listener - if permission was granted, events will fire
+        window.addEventListener('deviceorientation', testHandler);
+        
+        // Set to prompt initially, but testHandler will change it if permission is already granted
+        setPermissionState('prompt');
+        
+        // Give it a moment to detect if permission was already granted
+        // If events fire (permission granted), handler updates state
+        // If no events fire (permission not granted), state stays 'prompt'
+        setTimeout(() => {
+          window.removeEventListener('deviceorientation', testHandler);
+          // State will have been updated to 'granted' if permission was already granted
+          // Otherwise, it stays 'prompt' and user needs to request permission
+        }, 500);
+      } catch (error) {
+        // If we can't add listener, permission not granted
+        setPermissionState('prompt');
+      }
     } else {
       // Permission not required, try to use directly
       setPermissionState('granted');

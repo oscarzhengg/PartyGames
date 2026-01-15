@@ -49,27 +49,32 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
   );
 
   // Get permission state from tilt detection hook (must be called before useEffects that use it)
+  // Enable hook during countdown to properly detect permission state
   const {
     permissionState,
   } = useTiltDetection({
     onTilt: handleTilt,
-    enabled: tiltEnabled && phase === 'playing',
+    enabled: tiltEnabled && phase === 'playing', // Only detect tilts during play, but check permission always
     tiltThreshold: 25,
   });
 
-  // Check permission state - start countdown once we know the permission status
+  // Check permission state - allow countdown to proceed if permission was already granted in setup
+  // On iOS, once permission is granted globally, the hook should detect it quickly
   useEffect(() => {
-    // If permission is not 'unknown' or 'prompt', we can proceed (either granted, denied, or unsupported)
-    if (permissionState !== 'unknown' && permissionState !== 'prompt' && !permissionGranted) {
+    // Once permission state is determined (not 'unknown' or 'prompt'), we can proceed
+    // 'unknown' is allowed initially as it should quickly resolve
+    if (permissionState !== 'prompt' && !permissionGranted) {
       setPermissionGranted(true);
     }
   }, [permissionState, permissionGranted]);
 
-  // Countdown effect - only start when permission status is determined (not waiting for permission)
+  // Countdown effect - start countdown immediately (permission was already checked in setup)
+  // Only block if permission is still 'prompt' (which shouldn't happen if granted in setup)
   useEffect(() => {
     if (phase !== 'countdown') return;
-    // Don't start countdown if we're still waiting for permission
-    if (permissionState === 'unknown' || permissionState === 'prompt') return;
+    // Only block if permission is explicitly 'prompt' (needs user action)
+    // 'unknown' is allowed as it will quickly resolve, and permission was already granted in setup
+    if (permissionState === 'prompt') return;
 
     if (countdown <= 0) {
       setPhase('playing');
@@ -123,17 +128,19 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
 
 
   if (phase === 'countdown') {
-    // Show permission prompt if still needed (shouldn't happen but as fallback)
-    if (permissionState === 'prompt' || permissionState === 'unknown') {
+    // If permission is still 'unknown', give it a moment to initialize
+    // If permission was already granted in setup, it should be detected quickly
+    // Only show the waiting screen if it's still 'prompt' after a brief moment
+    if (permissionState === 'prompt') {
       return (
         <div className="min-h-screen flex items-center justify-center p-6">
           <Card className="max-w-md w-full">
             <div className="text-center space-y-4">
               <p className="text-yellow-400 font-medium">
-                Enabling motion detection...
+                Waiting for motion detection...
               </p>
               <p className="text-gray-300 text-sm">
-                Please grant permission to continue
+                Permission was granted in setup. If this persists, please refresh and try again.
               </p>
             </div>
           </Card>
@@ -141,7 +148,8 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
       );
     }
 
-    // Show countdown only when permission is granted
+    // Show countdown when permission is granted, unsupported, denied, or still initializing ('unknown')
+    // The countdown effect will only start when permission state is determined
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="text-center">

@@ -117,30 +117,22 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
   };
 
   const toggleCategory = (category: Category) => {
+    // Only allow one category to be selected at a time
     if (selectedCategories.includes(category)) {
-      setSelectedCategories(selectedCategories.filter((c) => c !== category));
+      // If clicking the same category, deselect it
+      setSelectedCategories([]);
     } else {
-      setSelectedCategories([...selectedCategories, category]);
+      // Otherwise, select only this category
+      setSelectedCategories([category]);
     }
   };
-
-  const selectAll = () => {
-    setSelectedCategories(CATEGORIES);
-  };
-
-  const deselectAll = () => {
-    setSelectedCategories([]);
-  };
-
-  const allSelected = selectedCategories.length === CATEGORIES.length;
-  const noneSelected = selectedCategories.length === 0;
 
   const categoryDisplayText = 
     categoryMode === 'random' 
       ? 'Random Category'
-      : selectedCategories.length === CATEGORIES.length
-      ? 'All Categories'
-      : `${selectedCategories.length} categor${selectedCategories.length === 1 ? 'y' : 'ies'}`;
+      : selectedCategories.length > 0
+      ? selectedCategories[0]
+      : 'No category selected';
 
   return (
     <div className="min-h-screen p-6 py-12">
@@ -189,31 +181,13 @@ export function HeadbandsSetup({ onContinue, onBack }: HeadbandsSetupProps) {
               {/* Category grid (only show when in select mode) */}
               {categoryMode === 'select' && (
                 <>
-                  <div className="flex justify-between items-center mb-3">
-                    <div>
+                  {selectedCategories.length > 0 && (
+                    <div className="mb-3">
                       <p className="text-gray-300 font-medium text-sm">
-                        {selectedCategories.length} of {CATEGORIES.length} selected
+                        Selected: {selectedCategories[0]}
                       </p>
                     </div>
-                    <div className="flex gap-2">
-                      {!allSelected && (
-                        <button
-                          onClick={selectAll}
-                          className="px-3 py-1 text-xs text-gray-400 hover:text-white transition-colors"
-                        >
-                          Select All
-                        </button>
-                      )}
-                      {!noneSelected && (
-                        <button
-                          onClick={deselectAll}
-                          className="px-3 py-1 text-xs text-gray-400 hover:text-white transition-colors"
-                        >
-                          Deselect All
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                  )}
 
                   <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
                     {CATEGORIES.map((category) => (
