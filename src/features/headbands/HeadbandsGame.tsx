@@ -101,7 +101,6 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
   const {
     requestPermission,
     permissionState,
-    isSupported,
     currentOrientation,
   } = useTiltDetection({
     onTilt: handleTilt,
@@ -330,7 +329,7 @@ export function HeadbandsGame({ settings, onBack }: HeadbandsGameProps) {
                     </div>
                   </div>
                   {/* Debug info (can be removed in production) */}
-                  {process.env.NODE_ENV === 'development' && (
+                  {import.meta.env.DEV && (
                     <div className="text-xs text-gray-500 mt-2">
                       Debug: β={currentOrientation.beta?.toFixed(1) ?? 'N/A'}° 
                       γ={currentOrientation.gamma?.toFixed(1) ?? 'N/A'}°
