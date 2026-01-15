@@ -1,4 +1,4 @@
-import type { Category } from './wordBanks';
+import type { Category, WordWithHint } from './wordBanks';
 
 export type PlayerId = number; // 1..N
 
@@ -7,7 +7,7 @@ export interface ImposterSettings {
   imposterCount: number;
   noImposterFirst: boolean; // "Imposter never goes first"
   selectedCategories: Category[];
-  secretWord: string; // Selected word from categories
+  secretWord: WordWithHint; // Selected word with randomly chosen hint
   imposterGetsCategory: boolean; // Whether imposters see the category
   imposterGetsHint: boolean; // Whether imposters see a hint
 }

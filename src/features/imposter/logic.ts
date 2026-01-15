@@ -1,14 +1,15 @@
 import type { ImposterSettings, RoleAssignment, PlayerId } from './types';
+import type { WordWithHint } from './wordBanks';
 import { selectRandomWord } from './wordBanks';
 
 /**
  * Assigns roles to players based on settings and selects a random word.
- * Returns the role assignment and the selected secret word.
+ * Returns the role assignment and the selected secret word with hint.
  */
-export function assignRoles(settings: ImposterSettings): { assignment: RoleAssignment; secretWord: string } {
+export function assignRoles(settings: ImposterSettings): { assignment: RoleAssignment; secretWord: WordWithHint } {
   const { playerCount, imposterCount, noImposterFirst, selectedCategories } = settings;
   
-  // Select a random word from the selected categories
+  // Select a random word from the selected categories (includes randomly selected hint)
   const secretWord = selectRandomWord(selectedCategories);
   
   // Generate all player IDs (1..N)

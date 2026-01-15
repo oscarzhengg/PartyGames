@@ -63,7 +63,7 @@ export function ImposterSetup({
         imposterCount,
         noImposterFirst,
         selectedCategories,
-        secretWord: '', // Will be set during role assignment
+        secretWord: { word: '', hint: '' }, // Will be replaced during role assignment
         imposterGetsCategory,
         imposterGetsHint,
       });

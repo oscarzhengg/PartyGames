@@ -1,14 +1,15 @@
 import { Modal } from '../../components/Modal';
 import { Button } from '../../components/Button';
 import type { PlayerId } from './types';
-import { getCategoryForWord, getHintForWord } from './wordBanks';
+import type { WordWithHint } from './wordBanks';
+import { getCategoryForWord } from './wordBanks';
 
 interface ImposterRoleModalProps {
   isOpen: boolean;
   onClose: () => void;
   playerId: PlayerId;
   isImposter: boolean;
-  secretWord: string;
+  secretWord: WordWithHint;
   imposterGetsCategory: boolean;
   imposterGetsHint: boolean;
 }
@@ -22,8 +23,8 @@ export function ImposterRoleModal({
   imposterGetsCategory,
   imposterGetsHint,
 }: ImposterRoleModalProps) {
-  const category = getCategoryForWord(secretWord);
-  const hint = getHintForWord(secretWord);
+  const category = getCategoryForWord(secretWord.word);
+  const hint = secretWord.hint;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Player ${playerId}`}>
@@ -59,15 +60,15 @@ export function ImposterRoleModal({
           </>
         ) : (
           <>
-            <div className="text-center space-y-4">
-              <p className="text-gray-400 text-sm">You are a regular player</p>
-              <div className="pt-4">
-                <p className="text-gray-400 mb-2">The secret word is:</p>
-                <p className="text-5xl font-bold text-white bg-gray-900/50 rounded-lg p-6 border border-gray-800">
-                  {secretWord}
-                </p>
+              <div className="text-center space-y-4">
+                <p className="text-gray-400 text-sm">You are a regular player</p>
+                <div className="pt-4">
+                  <p className="text-gray-400 mb-2">The secret word is:</p>
+                  <p className="text-5xl font-bold text-white bg-gray-900/50 rounded-lg p-6 border border-gray-800">
+                    {secretWord.word}
+                  </p>
+                </div>
               </div>
-            </div>
           </>
         )}
 

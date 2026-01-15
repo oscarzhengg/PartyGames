@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import type { RoleAssignment } from './types';
+import type { WordWithHint } from './wordBanks';
 
 interface AllReadyProps {
-  secretWord: string;
+  secretWord: WordWithHint;
   roleAssignment: RoleAssignment;
   onBackToHome: () => void;
   onSetupAgain?: () => void;
@@ -74,7 +75,7 @@ export function AllReady({ secretWord, roleAssignment, onBackToHome, onSetupAgai
                   <div>
                     <p className="text-gray-400 mb-2">The secret word was:</p>
                     <p className="text-4xl font-bold text-white bg-gray-900/50 rounded-lg p-4 border border-gray-800">
-                      {secretWord}
+                      {secretWord.word}
                     </p>
                   </div>
 
