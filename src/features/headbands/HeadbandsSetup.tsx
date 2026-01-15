@@ -13,7 +13,7 @@ import {
   FaMapMarkerAlt, 
   FaTrophy, 
   FaTags, 
-  FaUserStar,
+  FaStar,
   FaRandom,
   FaClock,
   FaChevronLeft
@@ -29,7 +29,7 @@ const CategoryIcons: Record<Category, React.ReactNode> = {
   'Locations': <FaMapMarkerAlt className="w-6 h-6" />,
   'Sports': <FaTrophy className="w-6 h-6" />,
   'Brands': <FaTags className="w-6 h-6" />,
-  'Celebrities': <FaUserStar className="w-6 h-6" />,
+  'Celebrities': <FaStar className="w-6 h-6" />,
 };
 
 const RandomIcon = <FaRandom className="w-6 h-6" />;
