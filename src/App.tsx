@@ -32,6 +32,15 @@ function App() {
   const [imposterSettings, setImposterSettings] = useState<ImposterSettings | null>(null);
   const [roleAssignment, setRoleAssignment] = useState<RoleAssignment | null>(null);
   const [headbandsSettings, setHeadbandsSettings] = useState<HeadbandsSettings | null>(null);
+  
+  // Persist ImposterSetup state across navigation
+  const [imposterSetupState, setImposterSetupState] = useState({
+    playerCount: 6,
+    imposterCount: 1,
+    noImposterFirst: false,
+    imposterGetsCategory: true,
+    imposterGetsHint: true,
+  });
 
   // Update viewport height CSS variable for iPhone orientation changes
   useEffect(() => {
@@ -67,6 +76,16 @@ function App() {
     setImposterSettings(null);
     setRoleAssignment(null);
     setHeadbandsSettings(null);
+    // Reset imposter setup state when going back to home
+    setImposterSetupState({
+      playerCount: 6,
+      imposterCount: 1,
+      noImposterFirst: false,
+      imposterGetsCategory: true,
+      imposterGetsHint: true,
+    });
+    // Reset categories to all categories when going back to home
+    setSelectedCategories(CATEGORIES);
   };
 
   const handleModeSelection = (mode: 'imposter' | 'headbands') => {
@@ -78,6 +97,15 @@ function App() {
   };
 
   const handleImposterSetupContinue = (settings: ImposterSettings) => {
+    // Sync the setup state with the settings being saved
+    setImposterSetupState({
+      playerCount: settings.playerCount,
+      imposterCount: settings.imposterCount,
+      noImposterFirst: settings.noImposterFirst,
+      imposterGetsCategory: settings.imposterGetsCategory,
+      imposterGetsHint: settings.imposterGetsHint,
+    });
+    
     const { assignment, secretWord } = assignRoles(settings);
     const settingsWithWord = { ...settings, secretWord };
     setImposterSettings(settingsWithWord);
@@ -94,15 +122,8 @@ function App() {
   };
 
   const handleSetupAgain = () => {
-    if (imposterSettings) {
-      const { assignment, secretWord } = assignRoles(imposterSettings);
-      const settingsWithWord = { ...imposterSettings, secretWord };
-      setImposterSettings(settingsWithWord);
-      setRoleAssignment(assignment);
-      navigateTo('imposterPlayerGrid');
-    } else {
-      navigateTo('imposterSetup');
-    }
+    // Navigate back to setup page - state is already preserved in imposterSetupState
+    navigateTo('imposterSetup');
   };
 
   const handleHeadbandsSetupContinue = (settings: HeadbandsSettings) => {
@@ -172,6 +193,8 @@ function App() {
             onCategoriesClick={() => navigateTo('categorySelection')}
             onContinue={handleImposterSetupContinue}
             onBack={() => navigateTo('modeSelection')}
+            setupState={imposterSetupState}
+            onSetupStateChange={setImposterSetupState}
           />
         )}
       </PageTransition>

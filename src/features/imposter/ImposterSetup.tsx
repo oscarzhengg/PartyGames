@@ -11,11 +11,21 @@ const BackIcon = (
   </svg>
 );
 
+interface ImposterSetupState {
+  playerCount: number;
+  imposterCount: number;
+  noImposterFirst: boolean;
+  imposterGetsCategory: boolean;
+  imposterGetsHint: boolean;
+}
+
 interface ImposterSetupProps {
   selectedCategories: Category[];
   onCategoriesClick: () => void;
   onContinue: (settings: ImposterSettings) => void;
   onBack: () => void;
+  setupState: ImposterSetupState;
+  onSetupStateChange: (state: ImposterSetupState) => void;
 }
 
 interface ValidationErrors {
@@ -28,14 +38,32 @@ export function ImposterSetup({
   selectedCategories, 
   onCategoriesClick,
   onContinue, 
-  onBack 
+  onBack,
+  setupState,
+  onSetupStateChange
 }: ImposterSetupProps) {
-  const [playerCount, setPlayerCount] = useState(6);
-  const [imposterCount, setImposterCount] = useState(1);
-  const [noImposterFirst, setNoImposterFirst] = useState(false);
-  const [imposterGetsCategory, setImposterGetsCategory] = useState(true);
-  const [imposterGetsHint, setImposterGetsHint] = useState(true);
+  const { playerCount, imposterCount, noImposterFirst, imposterGetsCategory, imposterGetsHint } = setupState;
   const [errors, setErrors] = useState<ValidationErrors>({});
+
+  const setPlayerCount = (value: number) => {
+    onSetupStateChange({ ...setupState, playerCount: value });
+  };
+
+  const setImposterCount = (value: number) => {
+    onSetupStateChange({ ...setupState, imposterCount: value });
+  };
+
+  const setNoImposterFirst = (value: boolean) => {
+    onSetupStateChange({ ...setupState, noImposterFirst: value });
+  };
+
+  const setImposterGetsCategory = (value: boolean) => {
+    onSetupStateChange({ ...setupState, imposterGetsCategory: value });
+  };
+
+  const setImposterGetsHint = (value: boolean) => {
+    onSetupStateChange({ ...setupState, imposterGetsHint: value });
+  };
 
   const validate = (): boolean => {
     const newErrors: ValidationErrors = {};
