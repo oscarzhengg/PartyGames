@@ -4,6 +4,7 @@ import { ModeSelection } from './features/ModeSelection';
 import { ImposterSetup } from './features/imposter/ImposterSetup';
 import { CategorySelection } from './features/imposter/CategorySelection';
 import { ImposterPlayerGrid } from './features/imposter/ImposterPlayerGrid';
+import { WhoStarts } from './features/imposter/WhoStarts';
 import { AllReady } from './features/imposter/AllReady';
 import { HeadbandsPlaceholder } from './features/headbands/HeadbandsPlaceholder';
 import { HeadbandsSetup } from './features/headbands/HeadbandsSetup';
@@ -20,6 +21,7 @@ type Screen =
   | 'imposterSetup'
   | 'categorySelection'
   | 'imposterPlayerGrid'
+  | 'whoStarts'
   | 'allReady'
   | 'headbandsPlaceholder'
   | 'headbandsSetup'
@@ -118,6 +120,10 @@ function App() {
   };
 
   const handleAllReady = () => {
+    navigateTo('whoStarts');
+  };
+
+  const handleWhoStartsContinue = () => {
     navigateTo('allReady');
   };
 
@@ -144,8 +150,8 @@ function App() {
     }
     
     // Fade transitions for game state changes
-    if (screen === 'imposterPlayerGrid' || screen === 'allReady' || 
-        previousScreen === 'imposterPlayerGrid' || previousScreen === 'allReady') {
+    if (screen === 'imposterPlayerGrid' || screen === 'whoStarts' || screen === 'allReady' ||
+        previousScreen === 'imposterPlayerGrid' || previousScreen === 'whoStarts' || previousScreen === 'allReady') {
       return 'fade';
     }
     
@@ -155,6 +161,7 @@ function App() {
       'modeSelection',
       'imposterSetup',
       'imposterPlayerGrid',
+      'whoStarts',
       'allReady',
       'headbandsPlaceholder',
       'headbandsSetup',
@@ -216,6 +223,15 @@ function App() {
             roleAssignment={roleAssignment}
             onAllReady={handleAllReady}
             onBack={handleImposterPlayerGridBack}
+          />
+        )}
+      </PageTransition>
+
+      <PageTransition isActive={currentScreen === 'whoStarts'} direction="fade">
+        {currentScreen === 'whoStarts' && imposterSettings && (
+          <WhoStarts
+            playerCount={imposterSettings.playerCount}
+            onContinue={handleWhoStartsContinue}
           />
         )}
       </PageTransition>
