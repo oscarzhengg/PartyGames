@@ -14,6 +14,7 @@ interface AllReadyProps {
 export function AllReady({ secretWord, roleAssignment, onBackToHome, onSetupAgain }: AllReadyProps) {
   const [showResults, setShowResults] = useState(false);
 
+  const hasImposters = roleAssignment.imposters.length > 0;
   const imposterText = roleAssignment.imposters.length === 1
     ? `Player ${roleAssignment.imposters[0]}`
     : `Players ${roleAssignment.imposters.join(', ')}`;
@@ -44,7 +45,9 @@ export function AllReady({ secretWord, roleAssignment, onBackToHome, onSetupAgai
                 <h1 className="text-3xl font-bold text-white">All Roles Assigned</h1>
                 
                 <p className="text-gray-300 text-lg">
-                  Start the discussion and figure out who the imposters are.
+                  {hasImposters
+                    ? 'Start the discussion and figure out who the imposters are.'
+                    : 'Everyone knows the word! Start the discussion.'}
                 </p>
               </div>
             </Card>
@@ -79,12 +82,20 @@ export function AllReady({ secretWord, roleAssignment, onBackToHome, onSetupAgai
                     </p>
                   </div>
 
-                  <div className="pt-4">
-                    <p className="text-gray-400 mb-2">The imposter{roleAssignment.imposters.length > 1 ? 's were' : ' was'}:</p>
-                    <p className="text-2xl font-bold text-transparent bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text">
-                      {imposterText}
-                    </p>
-                  </div>
+                  {hasImposters ? (
+                    <div className="pt-4">
+                      <p className="text-gray-400 mb-2">The imposter{roleAssignment.imposters.length > 1 ? 's were' : ' was'}:</p>
+                      <p className="text-2xl font-bold text-transparent bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text">
+                        {imposterText}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="pt-4">
+                      <p className="text-2xl font-bold text-transparent bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text">
+                        No imposters! Everyone had the word.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>

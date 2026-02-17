@@ -15,6 +15,7 @@ interface ImposterSetupState {
   playerCount: number;
   imposterCount: number;
   noImposterFirst: boolean;
+  allowNoImposter: boolean;
   imposterGetsCategory: boolean;
   imposterGetsHint: boolean;
 }
@@ -42,7 +43,7 @@ export function ImposterSetup({
   setupState,
   onSetupStateChange
 }: ImposterSetupProps) {
-  const { playerCount, imposterCount, noImposterFirst, imposterGetsCategory, imposterGetsHint } = setupState;
+  const { playerCount, imposterCount, noImposterFirst, allowNoImposter, imposterGetsCategory, imposterGetsHint } = setupState;
   const [errors, setErrors] = useState<ValidationErrors>({});
 
   const setPlayerCount = (value: number) => {
@@ -55,6 +56,10 @@ export function ImposterSetup({
 
   const setNoImposterFirst = (value: boolean) => {
     onSetupStateChange({ ...setupState, noImposterFirst: value });
+  };
+
+  const setAllowNoImposter = (value: boolean) => {
+    onSetupStateChange({ ...setupState, allowNoImposter: value });
   };
 
   const setImposterGetsCategory = (value: boolean) => {
@@ -95,6 +100,7 @@ export function ImposterSetup({
         playerCount,
         imposterCount,
         noImposterFirst,
+        allowNoImposter,
         selectedCategories,
         secretWord: { word: '', hint: '' }, // Will be replaced during role assignment
         imposterGetsCategory,
@@ -236,6 +242,16 @@ export function ImposterSetup({
                 checked={imposterGetsHint}
                 onChange={setImposterGetsHint}
               />
+              <Toggle
+                label="Allow no imposter round"
+                checked={allowNoImposter}
+                onChange={setAllowNoImposter}
+              />
+              {allowNoImposter && (
+                <p className="text-gray-400 text-sm ml-2">
+                  Sometimes everyone gets the word (no imposters)
+                </p>
+              )}
               <Toggle
                 label="Imposter never goes first"
                 checked={noImposterFirst}

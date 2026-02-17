@@ -6,6 +6,7 @@ export interface ImposterSettings {
   playerCount: number;
   imposterCount: number;
   noImposterFirst: boolean; // "Imposter never goes first"
+  allowNoImposter: boolean; // Chance that everyone gets the word (no imposters)
   selectedCategories: Category[];
   secretWord: WordWithHint; // Selected word with randomly chosen hint
   imposterGetsCategory: boolean; // Whether imposters see the category

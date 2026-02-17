@@ -40,6 +40,7 @@ function App() {
     playerCount: 6,
     imposterCount: 1,
     noImposterFirst: false,
+    allowNoImposter: false,
     imposterGetsCategory: true,
     imposterGetsHint: true,
   });
@@ -83,6 +84,7 @@ function App() {
       playerCount: 6,
       imposterCount: 1,
       noImposterFirst: false,
+      allowNoImposter: false,
       imposterGetsCategory: true,
       imposterGetsHint: true,
     });
@@ -104,6 +106,7 @@ function App() {
       playerCount: settings.playerCount,
       imposterCount: settings.imposterCount,
       noImposterFirst: settings.noImposterFirst,
+      allowNoImposter: settings.allowNoImposter,
       imposterGetsCategory: settings.imposterGetsCategory,
       imposterGetsHint: settings.imposterGetsHint,
     });

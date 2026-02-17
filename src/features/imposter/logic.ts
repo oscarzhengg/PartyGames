@@ -6,15 +6,22 @@ import { selectRandomWord } from './wordBanks';
  * Assigns roles to players based on settings and selects a random word.
  * Returns the role assignment and the selected secret word with hint.
  */
+/** Chance (0-1) that a round has no imposters when allowNoImposter is enabled */
+const NO_IMPOSTER_CHANCE = 0.2;
+
 export function assignRoles(settings: ImposterSettings): { assignment: RoleAssignment; secretWord: WordWithHint } {
-  const { playerCount, imposterCount, noImposterFirst, selectedCategories } = settings;
-  
+  const { playerCount, imposterCount, noImposterFirst, allowNoImposter, selectedCategories } = settings;
+
   // Select a random word from the selected categories (includes randomly selected hint)
   const secretWord = selectRandomWord(selectedCategories);
-  
+
   // Generate all player IDs (1..N)
   const allPlayers: PlayerId[] = Array.from({ length: playerCount }, (_, i) => i + 1);
-  
+
+  // When allowNoImposter is on, randomly decide whether this round has no imposters
+  const useNoImposter = allowNoImposter && Math.random() < NO_IMPOSTER_CHANCE;
+  const actualImposterCount = useNoImposter ? 0 : imposterCount;
+
   // Create a pool of players who can be imposters
   let imposterPool = [...allPlayers];
   
@@ -27,7 +34,7 @@ export function assignRoles(settings: ImposterSettings): { assignment: RoleAssig
   const imposters: PlayerId[] = [];
   const pool = [...imposterPool];
   
-  for (let i = 0; i < imposterCount && pool.length > 0; i++) {
+  for (let i = 0; i < actualImposterCount && pool.length > 0; i++) {
     const randomIndex = Math.floor(Math.random() * pool.length);
     imposters.push(pool[randomIndex]);
     pool.splice(randomIndex, 1);
